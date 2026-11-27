@@ -1594,7 +1594,7 @@ body.plan-open .addpop { z-index: 26; bottom: calc(env(safe-area-inset-bottom, 0
         <button type="button" class="btn" id="copyBackup">Copy</button>
       </div>
     </section>
-    <p class="buildline" id="buildLine">Version 2026-11-27 11:10</p>
+    <p class="buildline" id="buildLine">Version 2026-11-27 11:25</p>
       </div>
 </div>
 
@@ -4404,6 +4404,7 @@ var WORLD_WATER = [
     try { localStorage.setItem('gallery-ledger-view', ui.view); } catch (e) { /* the view just won't be remembered */ }
     renderStats();
     updateBackupStatus();
+    placeQuickInput();
     updateStick();
     $('tabbar').hidden = !(items.length || drafts.length);
     document.body.classList.toggle('is-empty', !items.length);
@@ -4425,7 +4426,7 @@ var WORLD_WATER = [
     }
     maybeShowTour();
     if (loadNote) main.append(el('p', { class: 'notice', text: loadNote }));
-    if (mode === 'local') main.append(el('p', { class: 'notice', text: 'Saved in this browser only.' }));
+    if (mode === 'local' && !localPhotos) main.append(el('p', { class: 'notice', text: 'Saved in this browser only.' }));
 
     var exampleCount = items.filter(function (i) { return i.example; }).length;
     if (exampleCount) {
@@ -6883,6 +6884,22 @@ var WORLD_WATER = [
     return null;
   }
 
+  /* The photo chooser is opened by tapping a real file input laid invisibly over the + button, so the iPhone
+     anchors its menu to that button instead of guessing a spot. */
+  function placeQuickInput() {
+    var inp = $('qLib'), b = $('quickBtn');
+    if (!inp || !b || !localPhotos) return;
+    var r = b.getBoundingClientRect();
+    if (!r.width || !r.height || $('tabbar').hidden) {
+      inp.classList.add('fileghost'); inp.style.cssText = ''; inp.removeAttribute('title'); return;
+    }
+    inp.classList.remove('fileghost');
+    inp.style.cssText = 'position:fixed;z-index:16;opacity:0.01;cursor:pointer;left:' + r.left + 'px;top:' + r.top + 'px;width:' + r.width + 'px;height:' + r.height + 'px;';
+    inp.setAttribute('title', 'Add a photo');
+  }
+  window.addEventListener('resize', placeQuickInput);
+  window.addEventListener('orientationchange', placeQuickInput);
+
   /* ---------- on-device photo storage (website only) ---------- */
   function openPhotoDb() {
     return new Promise(function (res, rej) {
@@ -7004,7 +7021,7 @@ var WORLD_WATER = [
       /* On the website: photos live in this device's own storage (IndexedDB), served to <img> by sw.js. */
       var local = await localPhotoStore();
       if (local) {
-        photoBase = '_blob/'; localPhotos = true; assets = local; render(); loadPending();
+        photoBase = '_blob/'; localPhotos = true; assets = local; render(); placeQuickInput(); loadPending();
         setTimeout(function () {
           var ids = [];
           allItems.forEach(function (x) { photoList(x).forEach(function (id) { ids.push(id); }); });
