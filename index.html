@@ -2124,6 +2124,8 @@ var WORLD_WATER = [
   // Where a stored photo is served from. This is the only place the address is built, so moving the app to another host means changing this one line.
   var photoBase = '/_blob/';
   function photoUrl(id) { return photoBase + id; }
+  var localPhotos = false; // true on the website, where small copies are kept for the grid and lists
+  function thumbUrl(id) { return localPhotos ? photoBase + id + '?t=1' : photoUrl(id); }
   // A museum you have already placed on the map gives its position to new works there, so nobody has to look it up again.
   function museumPin(name) {
     var key = norm(name).toLowerCase();
@@ -2569,7 +2571,7 @@ var WORLD_WATER = [
     var box = el('div', { class: 'ph ' + size + (needsInfo(it) ? ' incomplete' : '') });
     if (it.photoId) {
       var img = el('img', {
-        src: photoUrl(it.photoId),
+        src: thumbUrl(it.photoId),
         alt: [it.title, it.artist].map(norm).filter(Boolean).join(' by '),
         loading: 'lazy',
         decoding: 'async'
@@ -2642,7 +2644,7 @@ var WORLD_WATER = [
     var t = norm(it.title) || 'Untitled';
     var label = [t, norm(it.artist)].filter(Boolean).join(' by ');
     if (it.photoId) {
-      var img = el('img', { src: photoUrl(it.photoId), alt: label, decoding: 'async' });
+      var img = el('img', { src: thumbUrl(it.photoId), alt: label, decoding: 'async' });
       var btn = el('button', {
         type: 'button',
         class: 'work pending',
@@ -4301,7 +4303,7 @@ var WORLD_WATER = [
     if (!here.length) { closePlan(); return; }
     var first = here[0];
     var pics = here.filter(function (i) { return photoList(i).length; }).slice(0, 4);
-    $('planCollage').replaceChildren.apply($('planCollage'), pics.map(function (i) { return el('img', { src: photoUrl(photoList(i)[0]), alt: '', loading: 'lazy' }); }));
+    $('planCollage').replaceChildren.apply($('planCollage'), pics.map(function (i) { return el('img', { src: thumbUrl(photoList(i)[0]), alt: '', loading: 'lazy' }); }));
     $('planCollage').setAttribute('data-n', String(pics.length));
     $('planCountry').textContent = norm(first.country);
     $('planCountry').hidden = !norm(first.country);
@@ -4667,7 +4669,7 @@ var WORLD_WATER = [
       var url = URL.createObjectURL(file);
       var img = new Image();
       img.onload = function () {
-        var max = 3000;
+        var max = 4000;
         var w = img.naturalWidth, h = img.naturalHeight;
         var k = Math.min(1, max / Math.max(w, h));
         w = Math.max(1, Math.round(w * k));
@@ -4676,7 +4678,7 @@ var WORLD_WATER = [
         c.width = w; c.height = h;
         c.getContext('2d').drawImage(img, 0, 0, w, h);
         URL.revokeObjectURL(url);
-        c.toBlob(function (b) { if (b) resolve(b); else reject(new Error('encode')); }, 'image/jpeg', 0.8);
+        c.toBlob(function (b) { if (b) resolve(b); else reject(new Error('encode')); }, 'image/jpeg', 0.9);
       };
       img.onerror = function () { URL.revokeObjectURL(url); reject(new Error('decode')); };
       img.src = url;
@@ -6909,13 +6911,45 @@ var WORLD_WATER = [
           t.onerror = t.onabort = function () { rej(t.error); };
         });
       }
+      function makeThumb(blob) {
+        return new Promise(function (res) {
+          var url = URL.createObjectURL(blob), img = new Image();
+          img.onload = function () {
+            try {
+              var k = Math.min(1, 1000 / Math.max(img.naturalWidth, img.naturalHeight));
+              var c = document.createElement('canvas');
+              c.width = Math.max(1, Math.round(img.naturalWidth * k)); c.height = Math.max(1, Math.round(img.naturalHeight * k));
+              c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+              URL.revokeObjectURL(url);
+              c.toBlob(function (b) { res(b || null); }, 'image/jpeg', 0.82);
+            } catch (e) { URL.revokeObjectURL(url); res(null); }
+          };
+          img.onerror = function () { URL.revokeObjectURL(url); res(null); };
+          img.src = url;
+        });
+      }
+      async function getKey(key) { var r = await tx('readonly', function (st) { return st.get(key); }); return r.result || null; }
       return {
         upload: async function (blob) {
           var id = 'p' + Date.now().toString(36) + Math.random().toString(36).slice(2, 10);
           await tx('readwrite', function (st) { st.put(blob, id); });
+          try { var t = await makeThumb(blob); if (t) await tx('readwrite', function (st) { st.put(t, id + '.t'); }); } catch (e) { /* the grid falls back to the full photo */ }
           return { id: id, url: photoBase + id, sizeBytes: blob.size, contentType: blob.type };
         },
-        delete: async function (id) { await tx('readwrite', function (st) { st.delete(id); }); }
+        delete: async function (id) { await tx('readwrite', function (st) { st.delete(id); st.delete(id + '.t'); }); },
+        /* Photos added before small copies existed get one, a few at a time in the background. */
+        backfill: async function (ids) {
+          for (var i = 0; i < ids.length; i++) {
+            try {
+              if (await getKey(ids[i] + '.t')) continue;
+              var full = await getKey(ids[i]);
+              if (!full) continue;
+              var t = await makeThumb(full);
+              if (t) await tx('readwrite', function (st) { st.put(t, ids[i] + '.t'); });
+            } catch (e) { /* try again next launch */ }
+            await new Promise(function (r) { setTimeout(r, 60); });
+          }
+        }
       };
     } catch (e) { return null; }
   }
@@ -6967,7 +7001,14 @@ var WORLD_WATER = [
     else {
       /* On the website: photos live in this device's own storage (IndexedDB), served to <img> by sw.js. */
       var local = await localPhotoStore();
-      if (local) { photoBase = '_blob/'; assets = local; render(); loadPending(); }
+      if (local) {
+        photoBase = '_blob/'; localPhotos = true; assets = local; render(); loadPending();
+        setTimeout(function () {
+          var ids = [];
+          allItems.forEach(function (x) { photoList(x).forEach(function (id) { ids.push(id); }); });
+          local.backfill(ids);
+        }, 4000);
+      }
     }
   }
   init();

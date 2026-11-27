@@ -26,7 +26,8 @@ self.addEventListener('fetch', function (e) {
   var i = url.pathname.indexOf('/_blob/');
   if (i >= 0) {
     var id = decodeURIComponent(url.pathname.slice(i + 7));
-    e.respondWith(readPhoto(id).then(function (b) {
+    var wantThumb = url.searchParams.has('t');
+    e.respondWith((wantThumb ? readPhoto(id + '.t') : Promise.resolve(null)).then(function (th) { return th || readPhoto(id); }).then(function (b) {
       return b ? new Response(b, { headers: { 'Content-Type': b.type || 'image/jpeg', 'Cache-Control': 'no-store' } })
                : new Response('', { status: 404 });
     }));
