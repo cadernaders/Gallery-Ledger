@@ -1595,7 +1595,7 @@ body.plan-open .addpop { z-index: 26; bottom: calc(env(safe-area-inset-bottom, 0
         <button type="button" class="btn" id="copyBackup">Copy</button>
       </div>
     </section>
-    <p class="buildline" id="buildLine">Version 2026-11-27 15:00</p>
+    <p class="buildline" id="buildLine">Version 2026-11-27 15:20</p>
       </div>
 </div>
 
@@ -5463,7 +5463,11 @@ var WORLD_WATER = [
     try { await removeItem(rec.id); }
     catch (e) { toast('Could not delete. You may have view-only access.'); return; }
     sheetCreated = false; lastSaved = null;
-    if (!(finQueue.length && openNextDraft())) closeSheet();
+    if (!(finQueue.length && openNextDraft())) {
+      closeSheet();
+      // Other drafts waiting: land back on the Drafts list so you can carry on.
+      setTimeout(function () { if (drafts.length && $('draftFab') && !$('draftFab').hidden && !$('draftBar').classList.contains('open')) popOpen('draftBar', 'draftFab'); }, 220);
+    }
     toastUndo('Draft deleted.', async function () {
       try { await saveItem(rec); } catch (e) { toast('Could not undo.'); }
     });
