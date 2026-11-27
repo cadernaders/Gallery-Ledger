@@ -690,11 +690,24 @@ button, input, select, textarea { font: inherit; color: inherit; }
 @keyframes ts-badge { 0%, 60% { transform: scale(1); } 68% { transform: scale(1.4); } 78%, 100% { transform: scale(1); } }
 .ts-snap { height: 210px; padding: 0; }
 .ts-bar { position: absolute; left: 0; right: 0; bottom: 0; height: 56px; border-top: 1px solid var(--line); background: var(--surface); display: grid; place-items: center; }
-.ts-plus { width: 60px; height: 46px; display: grid; place-items: center; color: var(--accent); animation: ts-press 7s ease-in-out infinite both; }
+.ts-plus { width: 60px; height: 46px; display: grid; place-items: center; color: var(--accent); animation: ts-press 8s ease-in-out infinite both; }
 .ts-fab { position: absolute; left: 14px; bottom: 68px; width: 44px; height: 44px; border-radius: 50%; background: var(--surface); border: 1px solid var(--line); box-shadow: 0 2px 8px rgba(30, 20, 15, .12); display: grid; place-items: center; color: var(--ink); }
-.ts-badge { position: absolute; top: -4px; right: -4px; min-width: 18px; height: 18px; border-radius: 9px; background: var(--accent); color: #fff; font: 600 11px/18px var(--font-body); text-align: center; animation: ts-badge 7s ease-in-out infinite both; }
-.ts-shot { position: absolute; left: 50%; bottom: 78px; width: 44px; height: 56px; margin-left: -22px; border: 3px solid var(--ochre); border-radius: 2px; opacity: 0; animation: ts-fly 7s ease-in-out infinite both; }
+.ts-badge { position: absolute; top: -4px; right: -4px; min-width: 18px; height: 18px; border-radius: 9px; background: var(--accent); color: #fff; font: 600 11px/18px var(--font-body); text-align: center; animation: ts-badge 8s ease-in-out infinite both; }
+.ts-shot { position: absolute; left: 50%; bottom: 78px; width: 44px; height: 56px; margin-left: -22px; border: 3px solid var(--ochre); border-radius: 2px; opacity: 0; animation: ts-fly 8s ease-in-out infinite both; }
 .ts-snaphint { position: absolute; top: 14px; left: 0; right: 0; text-align: center; font-size: 12px; color: var(--muted); }
+@keyframes ts-l1 { 0%, 42% { opacity: 1; } 48%, 94% { opacity: 0; } 100% { opacity: 1; } }
+@keyframes ts-l2 { 0%, 46% { opacity: 0; } 52%, 92% { opacity: 1; } 98%, 100% { opacity: 0; } }
+.ts-two { display: block; height: 210px; padding: 0; }
+.ts-lay { position: absolute; inset: 0; display: grid; place-items: center; }
+.ts-lay.l1 { animation: ts-l1 16s ease-in-out infinite both; }
+.ts-lay.l2 { animation: ts-l2 16s ease-in-out infinite both; padding-top: 14px; box-sizing: border-box; }
+.ts-lay.l2 .ts-snaphint { top: 8px; }
+.ts-lay.l2 .ts-stack { height: 164px; margin-top: 22px; }
+.ts-lay.l2 .ts-ph { height: 26px; }
+.ts-look { display: grid; gap: 18px; align-content: center; justify-items: center; }
+.ts-vrow { width: 292px; display: flex; justify-content: flex-end; }
+@keyframes ts-vf { 0%, 40% { transform: none; background: var(--surface); } 46% { transform: scale(.88); background: var(--accent-soft); } 54%, 100% { transform: none; background: var(--surface); } }
+.ts-vfab { width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--line); box-shadow: 0 2px 8px rgba(30, 20, 15, .12); display: grid; place-items: center; color: var(--ink); animation: ts-vf 8s ease-in-out infinite both; animation-delay: 1s; }
 @keyframes ts-card { 0% { opacity: 0; transform: translateX(40px); } 8%, 66% { opacity: 1; transform: none; } 76%, 100% { opacity: 0; transform: translateX(-50px); } }
 @keyframes ts-type { 0%, 14% { clip-path: inset(0 100% 0 0); opacity: 1; } 26%, 94% { clip-path: inset(0 0 0 0); opacity: 1; } 100% { clip-path: inset(0 0 0 0); opacity: 0; } }
 @keyframes ts-btn { 0%, 54% { transform: none; } 58% { transform: scale(.94); } 62%, 100% { transform: none; } }
@@ -1684,7 +1697,7 @@ body.plan-open .addpop { z-index: 26; bottom: calc(env(safe-area-inset-bottom, 0
         <button type="button" class="btn" id="copyBackup">Copy</button>
       </div>
     </section>
-    <p class="buildline" id="buildLine">Version 2026-11-27 17:10</p>
+    <p class="buildline" id="buildLine">Version 2026-11-27 17:45</p>
       </div>
 </div>
 
@@ -4244,12 +4257,6 @@ var WORLD_WATER = [
       toast('Three examples added');
     } catch (e) { toast('Could not add the examples.'); }
   }
-  var TOUR = [
-    ['Gallery', 'All your works as photos, or as a list. The button in the bottom right switches between the two.'],
-    ['Timeline', 'Your works in the order they were made, with the art movements alongside.'],
-    ['Artists', 'Your works grouped by artist.'],
-    ['Museums', 'Where each work is kept, as a list or pinned on a world map.']
-  ];
   function welcomeView() {
     return el('div', { class: 'welcome' },
       el('div', { class: 'welcome-btns' },
@@ -4279,15 +4286,14 @@ var WORLD_WATER = [
     welcome: function () {
       return sceneHTML('<div class="ts-scene" aria-hidden="true"><div class="ts-wall"><div class="ts-fr"><i class="ts-art"></i></div><div class="ts-fr"><i class="ts-art b"></i></div><div class="ts-fr"><i class="ts-art c"></i></div></div></div>');
     },
-    snap: function () {
-      return sceneHTML('<div class="ts-scene ts-snap" aria-hidden="true"><p class="ts-snaphint">One tap, one photo</p><div class="ts-shot ts-art b"></div>' +
+    snapdrafts: function () {
+      return sceneHTML('<div class="ts-scene ts-two" aria-hidden="true">' +
+        '<div class="ts-lay l1"><p class="ts-snaphint">Snap it at the museum</p><div class="ts-shot ts-art b"></div>' +
         '<div class="ts-fab">' + iconOf('#draftFab', 22) + '<b class="ts-badge">3</b></div>' +
-        '<div class="ts-bar"><span class="ts-plus">' + iconOf('#quickBtn', 44) + '</span></div></div>');
-    },
-    drafts: function () {
-      return sceneHTML('<div class="ts-scene" aria-hidden="true"><div class="ts-stack"><div class="ts-card back"></div><div class="ts-card front"><div class="ts-ph ts-art c"></div>' +
+        '<div class="ts-bar"><span class="ts-plus">' + iconOf('#quickBtn', 44) + '</span></div></div>' +
+        '<div class="ts-lay l2"><p class="ts-snaphint">Catalogue it at home</p><div class="ts-stack"><div class="ts-card back"></div><div class="ts-card front"><div class="ts-ph ts-art c"></div>' +
         '<div class="ts-row"><small>Title</small><span>Water Lilies</span></div><div class="ts-row d1"><small>Artist</small><span>Claude Monet</span></div><div class="ts-row d2"><small>Year</small><span>1906</span></div>' +
-        '<div class="ts-add">Add to gallery</div></div></div></div>');
+        '<div class="ts-add">Add to gallery</div></div></div></div></div>');
     },
     autofill: function () {
       return sceneHTML('<div class="ts-scene" aria-hidden="true"><div class="ts-af"><div class="ts-row"><small>Title</small><span>The Starry Night</span></div><div class="ts-row d1"><small>Artist</small><span>Vincent van Gogh</span></div>' +
@@ -4295,22 +4301,14 @@ var WORLD_WATER = [
         '<div class="ts-row ts-fill"><small>Year</small><span>1889</span></div><div class="ts-row ts-fill d1"><small>Medium</small><span>Oil on canvas</span></div><div class="ts-row ts-fill d2"><small>Museum</small><span>MoMA, New York</span></div>' +
         '<div class="ts-src">Source: Wikidata</div></div></div>');
     },
-    ways: function () {
+    look: function () {
       var tabs = [['gallery', 'Gallery'], ['timeline', 'Timeline'], ['artists', 'Artists'], ['museums', 'Museums']].map(function (t) {
         return '<div class="ts-tab">' + sectionIcon(t[0], 26) + '<span>' + t[1] + '</span></div>';
       }).join('');
-      return sceneHTML('<div class="ts-scene" aria-hidden="true"><div class="ts-tabs">' + tabs + '</div></div>');
-    },
-    plan: function () {
-      return sceneHTML('<div class="ts-scene" aria-hidden="true"><div class="ts-plan"><div><h4>Museo del Prado</h4><small>Works to see today</small></div>' +
-        '<div class="ts-prog"><i></i><i></i><i></i></div>' +
-        '<div class="ts-rw r1"><span class="ts-chk"></span><b>Las Meninas</b></div><div class="ts-rw r2"><span class="ts-chk"></span><b>The Third of May 1808</b></div><div class="ts-rw r3"><span class="ts-chk"></span><b>The Garden of Earthly Delights</b></div></div></div>');
+      return sceneHTML('<div class="ts-scene ts-look" aria-hidden="true"><div class="ts-vrow"><span class="ts-vfab">' + iconOf('#viewFab', 22) + '</span></div><div class="ts-tabs">' + tabs + '</div></div>');
     },
     safe: function () {
       return sceneHTML('<div class="ts-scene" aria-hidden="true"><div class="ts-save"><span class="ts-exp">Export backup</span><span class="ts-doc">' + SVG_DOC + '</span><span class="ts-cloud">' + SVG_CLOUD + '<span class="ts-okc">' + SVG_TICK + '</span></span></div></div>');
-    },
-    ready: function () {
-      return sceneHTML('<div class="ts-scene" aria-hidden="true"><div class="ts-ready"><i class="ts-ring"></i><i class="ts-ring"></i>' + iconOf('#quickBtn', 56) + '</div></div>');
     }
   };
   var TOUR_PAGES = [
@@ -4321,52 +4319,37 @@ var WORLD_WATER = [
         ['Look back on it your way', 'Browse by artist, museum, timeline, or map.']
       ].map(function (t) { return el('li', null, el('strong', { text: t[0] }), el('span', { text: t[1] })); }));
     } },
-    { scene: 'snap', h: 'Snap photos as you wander', lead: 'Tap + and take a picture. That\u2019s all you need to do while you\u2019re in the museum.', body: function () {
-      return tourSteps([
-        ['One photo per work', 'Take a new one, or pick some you already have.'],
-        ['They wait in Drafts', 'The round button in the bottom left keeps count. Sort them out later, when you\u2019re home.']
-      ]);
-    } },
-    { scene: 'drafts', h: 'Drafts keep you organized', lead: 'Think of Drafts as your pile of photos to catalogue. Go through them whenever you feel like it.', body: function () {
+    { scene: 'snapdrafts', h: 'Snap now, catalogue later', lead: 'Tap + and take a picture. That’s all you need to do while you’re in the museum.', body: function () {
       return el('div', { class: 'tbody' }, tourSteps([
-        ['Open a draft', 'Crop the photo, or delete it if it didn\u2019t turn out.'],
-        ['Add what you know', 'Or tap Autofill and let it fill things in for you.'],
+        ['Photos wait in Drafts', 'The round button in the bottom left keeps count. Go through them whenever you feel like it.'],
+        ['Open a draft', 'Crop the photo, delete it if it didn’t turn out, and add what you know.'],
         ['Tap Add to gallery', 'It moves into your gallery, and your Drafts list comes back, ready for the next one.']
-      ]), el('p', { class: 'ts-note', text: 'Want your photos to skip Drafts and go straight to your gallery? Switch off \u201cSave new photos to Drafts\u201d in the \u22ef menu.' }));
+      ]), el('p', { class: 'ts-note', text: 'Want photos to go straight to your gallery? Switch off “Save new photos to Drafts” in the ⋯ menu.' }));
     } },
     { scene: 'autofill', h: 'Let Autofill do the typing', lead: 'Type the title and the artist, then tap Autofill details.', body: function () {
       return el('div', { class: 'tbody' }, tourSteps([
         ['It looks the work up', 'It searches Wikidata, a free online encyclopedia of facts.'],
-        ['It fills in what\u2019s missing', 'Year, medium, museum, city and art movement. It never changes anything you typed yourself.']
+        ['It fills in what’s missing', 'Year, medium, museum, city and art movement. It never changes anything you typed yourself.']
       ]), el('p', { class: 'ts-note', text: 'It works best on well-known works, so take a quick look at what it fills in.' }));
     } },
-    { scene: 'ways', h: 'Four ways to look', lead: 'Use the tabs along the bottom to switch between them.', body: function () {
-      return el('ol', { class: 'tour' }, TOUR.map(function (t) {
-        var tid = t[0].toLowerCase();
-        var icon = null;
-        if (SECTION_ICONS[tid]) { icon = el('span', { class: 'tour-ico' }); icon.innerHTML = sectionIcon(tid, 18); }
-        return el('li', null, el('strong', null, icon, t[0]), el('span', { text: t[1] }));
-      }));
-    } },
-    { scene: 'plan', h: 'Plan a museum visit', lead: 'Going to a museum soon? Bring along the works you want to see, as a checklist.', body: function () {
+    { scene: 'look', h: 'Look at it your way', lead: 'Your collection can be viewed in a few different ways.', body: function () {
       return tourSteps([
-        ['Save the works you want to see', 'Add each one as To see, with the museum filled in.'],
-        ['Open the museum\u2019s plan', 'Go to Museums and tap Plan a visit under the museum.'],
-        ['Tick them off as you go', 'Spot something new? Snap it with +.']
+        ['Use the tabs along the bottom', 'Gallery, Timeline, Artists and Museums each show your works differently.'],
+        ['Tap the round button', 'It’s in the bottom right. Switch between photos and a list, change the columns, or choose how things are sorted.'],
+        ['Heading to a museum?', 'In Museums, tap Plan a visit to get a checklist of the works you want to see.']
       ]);
     } },
-    { scene: 'safe', h: 'Keep your collection safe', lead: 'Everything is stored on this phone, so it\u2019s a good idea to save a copy once in a while.', body: function () {
+    { scene: 'safe', h: 'Keep it safe', lead: function () { return allItems.length ? 'Everything is stored on this phone, so save a copy once in a while.' : 'Everything is stored on this phone, so save a copy once in a while. Now, go find some art!'; }, body: function () {
       var steps = [
-        ['Make a backup', 'Tap \u22ef, then Export backup, and choose Save to Files.'],
+        ['Make a backup', 'Tap ⋯, then Export backup, and choose Save to Files.'],
         ['Keep it somewhere safe', 'iCloud Drive works well, or email it to yourself.'],
-        ['Bring it back any time', 'Tap \u22ef, then Import backup, and pick the file.']
+        ['Bring it back any time', 'Tap ⋯, then Import backup, and pick the file.']
       ];
       var standalone = false;
       try { standalone = !!window.navigator.standalone || (window.matchMedia && matchMedia('(display-mode: standalone)').matches); } catch (e) { /* show the tip */ }
-      return el('div', { class: 'tbody' }, tourSteps(steps), standalone ? null : el('p', { class: 'ts-note', text: 'Tip: in Safari, tap Share, then Add to Home Screen, and Gallery Ledger will open like a regular app.' }));
-    } },
-    { scene: 'ready', h: 'You\u2019re all set', lead: function () { return allItems.length ? 'Tap + whenever you find something you love.' : 'Take your first photo, or try three examples to get a feel for it.'; }, body: function () {
-      return allItems.length ? null : el('button', { type: 'button', class: 'btn', onclick: function () { closeTour(); addSamples(); } }, 'Try three examples');
+      return el('div', { class: 'tbody' }, tourSteps(steps),
+        standalone ? null : el('p', { class: 'ts-note', text: 'Tip: in Safari, tap Share, then Add to Home Screen, and Gallery Ledger will open like a regular app.' }),
+        allItems.length ? null : el('button', { type: 'button', class: 'btn', onclick: function () { closeTour(); addSamples(); } }, 'Try three examples'));
     } }
   ];
   var tourStep = 0, tourChecked = false, tourDir = '';
