@@ -1357,6 +1357,13 @@ body.is-empty #stats { display: none; }
 .workpage .photo-field { margin: 4px 0 10px; }
 .workpage .photo-field { gap: 10px; }
 .wp-suggest { padding: 12px 14px; border-radius: 14px; background: color-mix(in srgb, var(--accent) 9%, var(--surface)); border: 1px solid color-mix(in srgb, var(--accent) 25%, transparent); justify-content: space-between; flex-wrap: nowrap; }
+.recog-out { flex-basis: 100%; display: grid; gap: 8px; margin-top: 4px; }
+.recog-out p { margin: 0; font-size: 13px; color: var(--muted); }
+.recog-pick { display: grid; gap: 2px; text-align: left; width: 100%; padding: 10px 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); font: inherit; color: var(--ink); cursor: pointer; }
+.recog-pick strong { font-family: var(--font-display); font-weight: 500; font-size: 16px; }
+.recog-pick span { font-size: 12px; color: var(--muted); }
+.recog-pick:active { background: color-mix(in srgb, var(--accent) 10%, var(--surface)); }
+.recog-none { justify-self: start; padding: 4px 0; border: 0; background: none; font: inherit; font-size: 13px; color: var(--muted); text-decoration: underline; cursor: pointer; }
 .wp-sugtxt { display: grid; gap: 2px; min-width: 0; }
 .wp-sugtxt small { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--accent); font-weight: 700; }
 .wp-sugtxt .note { flex: none; }
@@ -1693,6 +1700,7 @@ body.plan-open .addpop { z-index: 26; bottom: calc(env(safe-area-inset-bottom, 0
     <label class="morerow switchrow" id="draftsRow"><span>Save new photos to Drafts<small>Turn off to add photos straight to your gallery.</small></span><input type="checkbox" id="draftsOnBox"></label>
     <button type="button" class="morerow" id="noPhotoBtn">Add a work without a photo</button>
     <button type="button" class="morerow" id="tourBtn">How it works</button>
+    <button type="button" class="morerow" id="recogRemoveBtn" hidden>Remove the recognition download</button>
     <section class="backup" aria-labelledby="backupTitle">
       <h2 id="backupTitle">Backup</h2>
       <p>Save a copy of your works and photos to keep somewhere safe, or restore one you saved before.</p>
@@ -1717,7 +1725,7 @@ body.plan-open .addpop { z-index: 26; bottom: calc(env(safe-area-inset-bottom, 0
         <button type="button" class="btn" id="copyBackup">Copy</button>
       </div>
     </section>
-    <p class="buildline" id="buildLine">Version 2026-11-28 00:20</p>
+    <p class="buildline" id="buildLine">Version 2026-11-28 00:55</p>
       </div>
 </div>
 
@@ -1957,9 +1965,11 @@ body.plan-open .addpop { z-index: 26; bottom: calc(env(safe-area-inset-bottom, 0
       <div class="autofill wp-suggest" id="autofillRow" hidden>
       <div class="wp-sugtxt"><small>Suggestions</small><span class="note" id="autofillNote"></span></div>
       <div class="wp-sugbtns">
+        <button type="button" class="btn" id="recogBtn" hidden>Recognise from photo</button>
         <button type="button" class="btn primary" id="autofillBtn">Autofill details</button>
         <button type="button" class="btn" id="placardBtn">Scan placard</button>
       </div>
+      <div class="recog-out" id="recogOut" hidden></div>
       <input type="file" id="placardInput" accept="image/*" capture="environment" class="fileghost" tabindex="-1" aria-hidden="true">
     </div>
     </div>
@@ -4944,6 +4954,7 @@ var WORLD_WATER = [
   }
   function draftSrc(ph) { return ph.preview || photoUrl(ph.id); }
   function renderPhoto() {
+    setTimeout(syncRecog, 0);
     if (typeof scheduleSave === 'function') scheduleSave();
     if (typeof updateComplete === 'function') updateComplete();
     var list = draft.photos;
@@ -5410,7 +5421,7 @@ var WORLD_WATER = [
     $(id).addEventListener('change', function (e) { var f = e.target.files; quickSave(f, id === 'qLib').then(function () { e.target.value = ''; }); });
   });
 
-  function syncAutofill() { $('autofillRow').hidden = !sampleFn || (typeof formComplete !== 'undefined' && formComplete); $('placardOfferRow').hidden = !aiOn(); $('placardBtn').hidden = !aiOn(); }
+  function syncAutofill() { syncRecog(); $('autofillRow').hidden = !sampleFn || (typeof formComplete !== 'undefined' && formComplete); $('placardOfferRow').hidden = !aiOn(); $('placardBtn').hidden = !aiOn(); }
   // The label scan leads when there is a photo but no title yet; Autofill leads once there is one.
   function orderSuggest() {
     var labelFirst = !norm($('f-title').value) && (draft && draft.photos || []).length > 0;
@@ -6052,6 +6063,132 @@ var WORLD_WATER = [
   }
 
   // The cover photo on the open sheet: a new one not yet saved, or the one already stored.
+  /* ----- recognise a work from its photo (on this phone; needs data/paintings.* built by tools/build_index.py) ----- */
+  var RECOG = { avail: false, probed: false, index: null, vecs: null, m: null, busy: false };
+  var RECOG_LIB = 'https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2';
+  var RECOG_MODEL = 'Xenova/clip-vit-base-patch32';
+  var RECOG_MIN = 0.72;   // below this a guess is not shown
+  var RECOG_SURE = 0.86;  // at or above this the top guess is called "likely"
+  function syncRecog() {
+    var b = $('recogBtn');
+    if (!b) return;
+    b.hidden = !(RECOG.avail && draft && draft.photos && draft.photos.length);
+    var rm = $('recogRemoveBtn');
+    if (rm) { var has = false; try { has = localStorage.getItem('gallery-ledger-recog-dl') === '1'; } catch (e) { /* hidden */ } rm.hidden = !has; }
+  }
+  function probeRecog() {
+    if (RECOG.probed || !localPhotos) return;
+    RECOG.probed = true;
+    fetch('data/paintings.json', { method: 'HEAD' }).then(function (r) { RECOG.avail = r.ok; syncRecog(); }).catch(function () { /* no index yet */ });
+  }
+  async function recogLoadIndex() {
+    if (RECOG.index) return;
+    var res = await Promise.all([fetch('data/paintings.json').then(function (r) { if (!r.ok) throw new Error('index'); return r.json(); }), fetch('data/paintings.bin').then(function (r) { if (!r.ok) throw new Error('index'); return r.arrayBuffer(); })]);
+    if (res[1].byteLength !== res[0].length * 512) throw new Error('index size');
+    RECOG.index = res[0]; RECOG.vecs = new Int8Array(res[1]);
+  }
+  async function recogLoadModel(note) {
+    if (RECOG.m) return;
+    var T = await import(RECOG_LIB);
+    T.env.allowLocalModels = false;
+    var files = {};
+    var cb = function (p) {
+      if (!p || p.status !== 'progress' || !p.total) return;
+      files[p.file] = { l: p.loaded, t: p.total };
+      var l = 0, t = 0; Object.keys(files).forEach(function (k) { l += files[k].l; t += files[k].t; });
+      if (t) note.textContent = 'Downloading the recogniser, one time only\u2026 ' + Math.min(99, Math.round(l / t * 100)) + '%';
+    };
+    var processor = await T.AutoProcessor.from_pretrained(RECOG_MODEL, { progress_callback: cb });
+    var vision = await T.CLIPVisionModelWithProjection.from_pretrained(RECOG_MODEL, { quantized: true, progress_callback: cb });
+    RECOG.m = { T: T, processor: processor, vision: vision };
+    try { localStorage.setItem('gallery-ledger-recog-dl', '1'); } catch (e) { /* fine */ }
+    syncRecog();
+  }
+  async function recogEmbed(blob) {
+    var m = RECOG.m;
+    var img = await m.T.RawImage.fromBlob(blob);
+    var inp = await m.processor(img);
+    var out = await m.vision(inp);
+    var v = Float32Array.from(out.image_embeds.data), n = 0, i;
+    for (i = 0; i < v.length; i++) n += v[i] * v[i];
+    n = Math.sqrt(n) || 1;
+    for (i = 0; i < v.length; i++) v[i] /= n;
+    return v;
+  }
+  function recogRank(q) {
+    var N = RECOG.index.length, vecs = RECOG.vecs, top = [];
+    for (var k = 0; k < N; k++) {
+      var base = k * 512, dot = 0;
+      for (var d = 0; d < 512; d++) dot += q[d] * vecs[base + d];
+      dot /= 127;
+      if (dot < RECOG_MIN) continue;
+      if (top.length < 3 || dot > top[top.length - 1].s) {
+        top.push({ k: k, s: dot });
+        top.sort(function (a, b) { return b.s - a.s; });
+        if (top.length > 3) top.pop();
+      }
+    }
+    return top;
+  }
+  function recogShow(top) {
+    var out = $('recogOut');
+    out.replaceChildren();
+    if (!top.length) {
+      out.append(el('p', { text: 'Couldn\u2019t recognise it. That is normal for modern art, sculptures and photos taken at an angle. Type the title and use Autofill instead.' }));
+      out.hidden = false; return;
+    }
+    var sure = top[0].s >= RECOG_SURE && (top.length < 2 || top[0].s - top[1].s >= 0.03);
+    out.append(el('p', { text: sure ? 'This looks like:' : 'Is it one of these?' }));
+    top.forEach(function (c) {
+      var w = RECOG.index[c.k]; // [id, title, artist, year, file]
+      var b = el('button', { type: 'button', class: 'recog-pick' }, el('strong', { text: w[1] }), el('span', { text: [w[2], w[3], Math.round(c.s * 100) + '% match'].filter(Boolean).join(' \u00b7 ') }));
+      b.addEventListener('click', function () {
+        $('f-title').value = w[1]; $('f-title').dispatchEvent(new Event('input', { bubbles: true }));
+        $('f-artist').value = w[2] || ''; $('f-artist').dispatchEvent(new Event('input', { bubbles: true }));
+        out.hidden = true;
+        $('autofillBtn').click();
+      });
+      out.append(b);
+    });
+    var none = el('button', { type: 'button', class: 'recog-none', text: 'None of these' });
+    none.addEventListener('click', function () { out.hidden = true; });
+    out.append(none);
+    out.hidden = false;
+  }
+  async function runRecog() {
+    if (RECOG.busy) return;
+    RECOG.busy = true;
+    var btn = $('recogBtn'), note = $('autofillNote');
+    btn.disabled = true; $('recogOut').hidden = true;
+    try {
+      var blob = await draftPhotoBlob();
+      if (!blob) { note.textContent = 'Add a photo first.'; return; }
+      note.textContent = 'Getting ready\u2026';
+      await recogLoadIndex();
+      await recogLoadModel(note);
+      note.textContent = 'Looking closely\u2026';
+      var top = recogRank(await recogEmbed(blob));
+      note.textContent = '';
+      recogShow(top);
+    } catch (e) {
+      note.textContent = 'Couldn\u2019t run recognition here. Check your connection, then try again.';
+    } finally { RECOG.busy = false; btn.disabled = false; }
+  }
+  async function removeRecogDownload() {
+    try {
+      var keys = await caches.keys();
+      for (var i = 0; i < keys.length; i++) { if (keys[i] !== 'gl-app-v1') await caches.delete(keys[i]); }
+      localStorage.removeItem('gallery-ledger-recog-dl');
+    } catch (e) { /* nothing to remove */ }
+    RECOG.m = null;
+    syncRecog();
+    toast('Recognition download removed');
+  }
+  document.addEventListener('DOMContentLoaded', function () {
+    $('recogBtn').addEventListener('click', runRecog);
+    $('recogRemoveBtn').addEventListener('click', function () { closeMore(); removeRecogDownload(); });
+  });
+
   async function draftPhotoBlob() {
     var ph = draft.photos[0];
     if (!ph) return null;
@@ -7592,7 +7729,7 @@ var WORLD_WATER = [
       /* On the website: photos live in this device's own storage (IndexedDB), served to <img> by sw.js. */
       var local = await localPhotoStore();
       if (local) {
-        photoBase = '_blob/'; localPhotos = true; assets = local; render(); placeQuickInput(); loadPending();
+        photoBase = '_blob/'; localPhotos = true; assets = local; render(); placeQuickInput(); loadPending(); probeRecog();
         setTimeout(function () {
           var ids = [];
           allItems.forEach(function (x) { photoList(x).forEach(function (id) { ids.push(id); }); });
