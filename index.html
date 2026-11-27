@@ -10,8 +10,10 @@
 body { margin: 0; font: 14px system-ui, -apple-system, "Segoe UI", sans-serif; }
 img { max-width: 100%; }
 [hidden] { display: none !important; }
+/* Paints over the phone's status-bar area so scrolled content does not show through behind the clock. */
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); background: var(--bg, #F2EEE6); z-index: 10; pointer-events: none; }
 /* File inputs stay invisible but are placed near the bottom centre, so iPhone opens its photo menu there instead of in a random spot. */
-.fileghost { position: fixed; left: 50%; bottom: calc(96px + env(safe-area-inset-bottom, 0px)); width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+.fileghost { position: fixed; left: 50%; bottom: calc(30px + env(safe-area-inset-bottom, 0px)); width: 1px; height: 1px; opacity: 0; pointer-events: none; }
 </style>
 <title>Gallery Ledger</title>
 <link rel="manifest" href="manifest.webmanifest">
