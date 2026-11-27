@@ -1595,7 +1595,7 @@ body.plan-open .addpop { z-index: 26; bottom: calc(env(safe-area-inset-bottom, 0
         <button type="button" class="btn" id="copyBackup">Copy</button>
       </div>
     </section>
-    <p class="buildline" id="buildLine">Version 2026-11-27 13:45</p>
+    <p class="buildline" id="buildLine">Version 2026-11-27 14:10</p>
       </div>
 </div>
 
@@ -5083,8 +5083,8 @@ var WORLD_WATER = [
   function syncDoneLabel() {
     var b = $('doneBtn');
     if (!b) return;
-    var adds = !!(lastSaved && lastSaved.draft);
-    $('f-del2').hidden = !adds;
+    var adds = !!(lastSaved && lastSaved.draft) || !editingId;
+    $('f-del2').hidden = !(lastSaved && lastSaved.draft);
     var label = finQueue.length ? (adds ? 'Add and next' : 'Save and next') + ' \u00b7 ' + finQueue.length + ' left' : (adds ? 'Add to gallery' : 'Done');
     if (b.textContent !== label) b.textContent = label;
     b.hidden = false;
@@ -5220,9 +5220,12 @@ var WORLD_WATER = [
     if (s === 'saved' || s === 'draft') stateTimer = setTimeout(function () { if (box.dataset.s === s) box.classList.add('quiet'); }, 2500);
     box.classList.remove('quiet');
   }
+  // Only a work already in the gallery saves itself as you type. A draft or a brand-new work waits for Add to gallery.
+  function manualSave() { return !editingId || editingDraft; }
   function scheduleSave() {
     if (!sheetReady) return;
     dirty = true;
+    if (manualSave()) return;
     clearTimeout(saveTimer);
     saveTimer = setTimeout(commitSheet, 700);
   }
@@ -5338,6 +5341,11 @@ var WORLD_WATER = [
     toast(lastSaved && lastSaved.draft ? 'Saved to Drafts' : 'Added to your ledger');
   }
   async function leaveSheet() {
+    if (manualSave()) {
+      if (dirty || saveTimer) { openDiscardSheet(); return; }
+      closeSheet();
+      return;
+    }
     await flushSave();
     wrapUpToast();
     closeSheet();
@@ -5427,7 +5435,19 @@ var WORLD_WATER = [
     catch (e) { toast('Could not delete. You may have view-only access.'); }
   }
 
+  var delMode = 'delete';
+  function openDiscardSheet() {
+    delMode = 'discard';
+    $('delTitle').textContent = 'Discard changes?';
+    $('delSub').textContent = editingDraft ? 'Your changes to this draft will not be saved.' : 'This work has not been added to your gallery yet.';
+    $('delYes').textContent = 'Discard'; $('delNo').textContent = 'Keep editing';
+    $('delSheet').hidden = false;
+    $('delNo').focus();
+  }
   function openDelSheet() {
+    delMode = 'delete';
+    $('delTitle').textContent = 'Delete this work?';
+    $('delYes').textContent = 'Delete'; $('delNo').textContent = 'Cancel';
     var t = norm($('f-title').value);
     $('delSub').textContent = (t ? '\u201c' + t + '\u201d' : 'This work') + ' will be removed from your ledger.';
     $('delSheet').hidden = false;
@@ -5447,7 +5467,7 @@ var WORLD_WATER = [
   }
   $('f-del2').addEventListener('click', function () { $('f-del').click(); });
   $('f-del').addEventListener('click', async function () {
-    await flushSave();
+    if (!manualSave()) await flushSave();
     var rec = lastSaved;
     if (!rec) return;
     if (rec.draft) deleteDraftWithUndo(rec); else openDelSheet();
@@ -5600,7 +5620,11 @@ var WORLD_WATER = [
   }, true);
   $('delNo').addEventListener('click', closeDelSheet);
   $('delSheet').addEventListener('mousedown', function (e) { if (e.target === $('delSheet')) closeDelSheet(); });
-  $('delYes').addEventListener('click', async function () { closeDelSheet(); await doDelete(); });
+  $('delYes').addEventListener('click', async function () {
+    closeDelSheet();
+    if (delMode === 'discard') { clearTimeout(saveTimer); saveTimer = 0; dirty = false; closeSheet(); return; }
+    await doDelete();
+  });
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !$('delSheet').hidden) { e.stopPropagation(); closeDelSheet(); } }, true);
   $('f-fav').addEventListener('click', scheduleSave);
   $('form').addEventListener('submit', async function (e) {
