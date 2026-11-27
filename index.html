@@ -128,7 +128,6 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .btn:disabled { opacity: 0.55; cursor: default; }
 .btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
 .btn.danger { color: var(--danger); border-color: var(--danger); }
-.deldraft { display: block; margin: 22px auto 10px; padding: 10px 16px; background: none; border: 0; color: var(--danger); font: inherit; font-weight: 500; cursor: pointer; }
 .btn.quiet { color: var(--danger); background: transparent; border-color: transparent; padding-left: 4px; padding-right: 4px; }
 .link { background: none; border: 0; padding: 8px 2px; color: var(--accent); font-size: 14px; font-weight: 600; cursor: pointer; }
 .link:hover { text-decoration: underline; }
@@ -1231,6 +1230,7 @@ body.is-empty #stats { display: none; }
 .workpage .herobtn:not(.empty) { padding: 26px 18px; }
 .workpage .herobtn img { max-height: 46vh; }
 .herocrop { position: absolute; right: 10px; bottom: 10px; display: grid; place-items: center; width: 38px; height: 38px; padding: 0; border: 1px solid var(--line); border-radius: 50%; background: color-mix(in srgb, var(--surface) 92%, transparent); color: var(--muted); box-shadow: 0 1px 6px rgba(30, 20, 15, .12); cursor: pointer; }
+.herotrash { right: auto; left: 10px; }
 .herocrop:active { transform: scale(.95); color: var(--ink); }
 .workpage .photo-field { margin: 4px 0 10px; }
 .workpage .photo-field { gap: 10px; }
@@ -1595,7 +1595,7 @@ body.plan-open .addpop { z-index: 26; bottom: calc(env(safe-area-inset-bottom, 0
         <button type="button" class="btn" id="copyBackup">Copy</button>
       </div>
     </section>
-    <p class="buildline" id="buildLine">Version 2026-11-27 14:30</p>
+    <p class="buildline" id="buildLine">Version 2026-11-27 15:00</p>
       </div>
 </div>
 
@@ -1711,7 +1711,6 @@ body.plan-open .addpop { z-index: 26; bottom: calc(env(safe-area-inset-bottom, 0
       </div>
     </div>
 
-    <button type="button" class="deldraft" id="f-del2" hidden>Delete draft</button>
     <div class="sheet-foot" id="sheetFoot"></div>
   </form>
 </div>
@@ -4626,6 +4625,9 @@ var WORLD_WATER = [
         var cb2 = el('button', { type: 'button', class: 'herocrop', 'aria-label': 'Crop photo', title: 'Crop photo', onclick: function () { openCrop(0); } });
         cb2.innerHTML = '<svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 2v14a2 2 0 0 0 2 2h14"/><path d="M18 22V8a2 2 0 0 0-2-2H2"/></svg>';
         hero.append(cb2);
+        var db2 = el('button', { type: 'button', class: 'herocrop herotrash', 'aria-label': 'Delete draft', title: 'Delete draft', onclick: function () { $('f-del').click(); } });
+        db2.innerHTML = '<svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3"/></svg>';
+        hero.append(db2);
       }
     } else if (assets) {
       hero.append(el('button', { type: 'button', class: 'herobtn empty', onclick: function () { $('photoInput').click(); } }, 'Add a photo'));
@@ -5086,7 +5088,6 @@ var WORLD_WATER = [
     var b = $('doneBtn');
     if (!b) return;
     var adds = !!(lastSaved && lastSaved.draft) || !editingId;
-    $('f-del2').hidden = !(lastSaved && lastSaved.draft);
     var label = finQueue.length ? (adds ? 'Add and next' : 'Save and next') + ' \u00b7 ' + finQueue.length + ' left' : (adds ? 'Add to gallery' : 'Done');
     if (b.textContent !== label) b.textContent = label;
     b.hidden = false;
@@ -5467,7 +5468,6 @@ var WORLD_WATER = [
       try { await saveItem(rec); } catch (e) { toast('Could not undo.'); }
     });
   }
-  $('f-del2').addEventListener('click', function () { $('f-del').click(); });
   $('f-del').addEventListener('click', async function () {
     if (!manualSave()) await flushSave();
     var rec = lastSaved;
