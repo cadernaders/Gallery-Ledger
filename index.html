@@ -1697,7 +1697,7 @@ body.plan-open .addpop { z-index: 26; bottom: calc(env(safe-area-inset-bottom, 0
         <button type="button" class="btn" id="copyBackup">Copy</button>
       </div>
     </section>
-    <p class="buildline" id="buildLine">Version 2026-11-27 18:25</p>
+    <p class="buildline" id="buildLine">Version 2026-11-27 18:50</p>
       </div>
 </div>
 
@@ -4251,7 +4251,7 @@ var WORLD_WATER = [
   ];
   async function samplePhotoBlob(rec) {
     var key = rec.photoKey, file = rec.photoFile;
-    delete rec.photoKey; delete rec.photoFile;
+    delete rec.photoKey;
     if (key && SAMPLE_PHOTOS[key]) return dataUrlToBlob(SAMPLE_PHOTOS[key]);
     if (!file) return null;
     var API = 'https://commons.wikimedia.org/w/api.php?action=query&format=json&origin=*&prop=imageinfo&iiprop=url&iiurlwidth=900&';
@@ -4278,6 +4278,8 @@ var WORLD_WATER = [
   }
   async function addSamples() {
     try {
+      for (var w = 0; w < 50 && !assets; w++) await new Promise(function (r) { setTimeout(r, 100); });
+      try { localStorage.setItem('gallery-ledger-seeded', '1'); } catch (e) { /* it may seed again next time */ }
       for (var i = 0; i < SAMPLES.length; i++) {
         var rec = Object.assign({ id: newId(), no: nextNo() + i, createdAt: Date.now() + i, example: true, dateSeen: '', notes: '' }, SAMPLES[i]);
         var blob = await samplePhotoBlob(rec);
@@ -4291,11 +4293,26 @@ var WORLD_WATER = [
       toast('Ten examples added');
     } catch (e) { toast('Could not add the examples.'); }
   }
+  var retryingPhotos = false;
+  async function retryExamplePhotos() {
+    if (retryingPhotos || !assets || !navigator.onLine) return;
+    var todo = allItems.filter(function (x) { return x.example && x.photoFile && !x.photoId; });
+    if (!todo.length) return;
+    retryingPhotos = true;
+    try {
+      for (var i = 0; i < todo.length; i++) {
+        var rec = Object.assign({}, todo[i]);
+        var blob = await samplePhotoBlob(Object.assign({}, rec));
+        if (!blob) continue;
+        try { var up = await assets.upload(blob, { type: 'image/jpeg' }); rec.photoId = up.id; rec.photoIds = [up.id]; await saveItem(rec); } catch (e) { /* try again next time */ }
+      }
+    } finally { retryingPhotos = false; }
+  }
+  window.addEventListener('online', function () { setTimeout(retryExamplePhotos, 1500); });
   function welcomeView() {
     return el('div', { class: 'welcome' },
       el('div', { class: 'welcome-btns' },
-        el('button', { type: 'button', class: 'btn primary', onclick: function () { openSheet(null); } }, 'Add your first artwork'),
-        el('button', { type: 'button', class: 'btn', onclick: addSamples }, 'Try ten examples')));
+        el('button', { type: 'button', class: 'btn primary', onclick: function () { openSheet(null); } }, 'Add your first artwork')));
   }
 
   /* ----- the welcome tour: a short walk through the app, shown first on an empty ledger ----- */
@@ -4373,7 +4390,7 @@ var WORLD_WATER = [
         ['Heading to a museum?', 'In Museums, tap Plan a visit to get a checklist of the works you want to see.']
       ]);
     } },
-    { scene: 'safe', h: 'Keep it safe', lead: function () { return allItems.length ? 'Everything is stored on this phone, so save a copy once in a while.' : 'Everything is stored on this phone, so save a copy once in a while. Now, go find some art!'; }, body: function () {
+    { scene: 'safe', h: 'Keep it safe', lead: 'Everything is stored on this phone, so save a copy once in a while.', body: function () {
       var steps = [
         ['Make a backup', 'Tap ⋯, then Export backup, and choose Save to Files.'],
         ['Keep it somewhere safe', 'iCloud Drive works well, or email it to yourself.'],
@@ -4382,8 +4399,7 @@ var WORLD_WATER = [
       var standalone = false;
       try { standalone = !!window.navigator.standalone || (window.matchMedia && matchMedia('(display-mode: standalone)').matches); } catch (e) { /* show the tip */ }
       return el('div', { class: 'tbody' }, tourSteps(steps),
-        standalone ? null : el('p', { class: 'ts-note', text: 'Tip: in Safari, tap Share, then Add to Home Screen, and Gallery Ledger will open like a regular app.' }),
-        allItems.length ? null : el('button', { type: 'button', class: 'btn', onclick: function () { closeTour(); addSamples(); } }, 'Try ten examples'));
+        standalone ? null : el('p', { class: 'ts-note', text: 'Tip: in Safari, tap Share, then Add to Home Screen, and Gallery Ledger will open like a regular app.' }));
     } }
   ];
   var tourStep = 0, tourChecked = false, tourDir = '';
@@ -4398,6 +4414,9 @@ var WORLD_WATER = [
     $('tourPage').hidden = true;
     try { localStorage.setItem('gallery-ledger-welcomed', '1'); } catch (e) { /* the tour may show again next time */ }
     if ($('overlay').hidden && $('planOverlay').hidden) document.body.style.overflow = '';
+    var seeded = false;
+    try { seeded = localStorage.getItem('gallery-ledger-seeded') === '1'; } catch (e) { /* treat as not seeded */ }
+    if (!seeded && !allItems.length) addSamples();
   }
   function tourGo(d) {
     var n = tourStep + d;
@@ -7414,6 +7433,7 @@ var WORLD_WATER = [
           var ids = [];
           allItems.forEach(function (x) { photoList(x).forEach(function (id) { ids.push(id); }); });
           local.backfill(ids);
+          retryExamplePhotos();
         }, 4000);
       }
     }
