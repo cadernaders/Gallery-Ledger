@@ -1594,7 +1594,7 @@ body.plan-open .addpop { z-index: 26; bottom: calc(env(safe-area-inset-bottom, 0
         <button type="button" class="btn" id="copyBackup">Copy</button>
       </div>
     </section>
-    <p class="buildline" id="buildLine">Version 2026-11-27 12:10</p>
+    <p class="buildline" id="buildLine">Version 2026-11-27 13:00</p>
       </div>
 </div>
 
@@ -4854,7 +4854,7 @@ var WORLD_WATER = [
       }
       var r = pendBatch; pendBatch = { saved: 0, lastId: '' };
       if (r.saved) {
-        if (r.saved === 1 && r.lastId && placardOfferOn() && sampleFn && !pending.length) offerPlacard(r.lastId);
+        if (r.saved === 1 && r.lastId && placardOfferOn() && aiOn() && !pending.length) offerPlacard(r.lastId);
         else if (!pending.length) toast(r.saved + (r.saved === 1 ? ' photo' : ' photos') + (draftsOn() ? ' saved to Drafts.' : ' added to your gallery.'));
       }
     })();
@@ -5054,7 +5054,7 @@ var WORLD_WATER = [
     $(id).addEventListener('change', function (e) { var f = e.target.files; quickSave(f, id === 'qLib').then(function () { e.target.value = ''; }); });
   });
 
-  function syncAutofill() { $('autofillRow').hidden = !sampleFn || (typeof formComplete !== 'undefined' && formComplete); $('placardOfferRow').hidden = !sampleFn; }
+  function syncAutofill() { $('autofillRow').hidden = !sampleFn || (typeof formComplete !== 'undefined' && formComplete); $('placardOfferRow').hidden = !aiOn(); $('placardBtn').hidden = !aiOn(); }
   // The label scan leads when there is a photo but no title yet; Autofill leads once there is one.
   function orderSuggest() {
     var labelFirst = !norm($('f-title').value) && (draft && draft.photos || []).length > 0;
@@ -5674,6 +5674,7 @@ var WORLD_WATER = [
     if (!sampleFn) return;
     var known = knownFields();
     var hasPhoto = draft.photos.length > 0;
+    if (sampleFn.wiki && !norm($('f-title').value)) { note.textContent = 'Enter the title first. The artist helps too.'; return; }
     if (!known.length && !hasPhoto) { note.textContent = 'Enter a title or an artist, or add a photo, first.'; return; }
     var btn = $('autofillBtn');
     btn.disabled = true;
@@ -5708,7 +5709,7 @@ var WORLD_WATER = [
       var data = await sampleFn.json(prompt, opts);
       var sure = data && String(data.confidence).toLowerCase() === 'high';
       if (!sure) {
-        note.textContent = 'Couldn\u2019t identify it. Add the artist or a clearer photo.';
+        note.textContent = sampleFn.wiki ? 'Couldn\u2019t find a sure match on Wikidata. Check the title and artist spelling.' : 'Couldn\u2019t identify it. Add the artist or a clearer photo.';
         return;
       }
       var filled = 0;
@@ -5735,7 +5736,7 @@ var WORLD_WATER = [
       var newTitle = norm(data.title).slice(0, 160);
       var oldTitle = norm($('f-title').value);
       if (newTitle && newTitle.toLowerCase() !== oldTitle.toLowerCase()) { $('f-title').value = newTitle; filled++; }
-      note.textContent = filled ? 'Filled ' + filled + (filled === 1 ? ' field.' : ' fields.') + ' Check them over.' : 'Nothing new to fill in.';
+      note.textContent = filled ? 'Filled ' + filled + (filled === 1 ? ' field.' : ' fields.') + ' Check them over.' + (sampleFn.wiki ? ' Source: Wikidata.' : '') : 'Nothing new to fill in.';
       syncPlaceUI();
       if (filled) { moreSummary(); scheduleSave(); }
     } catch (err) {
@@ -5801,7 +5802,7 @@ var WORLD_WATER = [
   $('placardOffer').checked = placardOfferOn();
   $('placardOffer').addEventListener('change', function () { try { localStorage.setItem('gallery-ledger-placardoffer', $('placardOffer').checked ? '1' : '0'); } catch (e) { /* the choice just won't be remembered */ } });
   async function readPlacard(file) {
-    if (!sampleFn) throw { code: 'no_sample' };
+    if (!aiOn()) throw { code: 'no_sample' };
     var caps = await sampleFn.limits();
     if (!caps || !caps.images) throw { code: 'images_unavailable' };
     var blob = await processImage(file);
@@ -6469,7 +6470,7 @@ var WORLD_WATER = [
   // Ask Claude for the coordinates of museums that have no pin yet.
   async function locateMissing(btn, noteEl) {
     var need = items.filter(function (it) { return !hasCoords(it) && norm(it.museum); });
-    if (!need.length || !sampleFn) return;
+    if (!need.length || !aiOn()) return;
     var groups = {};
     need.forEach(function (it) {
       var k = [norm(it.museum), norm(it.city), norm(it.country)].join('|').toLowerCase();
@@ -6539,7 +6540,7 @@ var WORLD_WATER = [
       var noteText = el('span', { text: missing.length + (missing.length === 1 ? ' work is' : ' works are') + ' not on the map yet.' +
         (missing.length > locatable.length ? ' A work needs a museum to be placed.' : '') });
       var box = el('div', { class: 'notice' }, noteText);
-      if (locatable.length && sampleFn) {
+      if (locatable.length && aiOn()) {
         var findBtn = el('button', { type: 'button', class: 'link' }, 'Find locations');
         findBtn.addEventListener('click', function () { locateMissing(findBtn, noteText); });
         box.append(findBtn);
@@ -6862,6 +6863,161 @@ var WORLD_WATER = [
     };
   }
 
+  /* ---------- Wikidata lookup (website) ----------
+     Free and needs no key. Given a title (and an artist if typed), finds the artwork on Wikidata and returns the same
+     kind of answer the AI Autofill gives, or null when it cannot be sure which work is meant. */
+  var WD_API = 'https://www.wikidata.org/w/api.php';
+  var WD_CITY = ['Q515', 'Q1549591', 'Q1637706', 'Q702492', 'Q486972', 'Q3957', 'Q532', 'Q5119', 'Q1093829', 'Q484170', 'Q15284', 'Q747074', 'Q7930989', 'Q200250'];
+  function wdGet(params) {
+    var q = Object.keys(params).map(function (k) { return k + '=' + encodeURIComponent(params[k]); }).join('&');
+    return withTimeout(fetch(WD_API + '?format=json&origin=*&' + q), 12000).then(function (r) {
+      if (!r.ok) throw new Error('wikidata ' + r.status);
+      return r.json();
+    });
+  }
+  function wdEntities(ids) {
+    ids = ids.filter(function (x, i) { return x && ids.indexOf(x) === i; }).slice(0, 50);
+    if (!ids.length) return Promise.resolve({});
+    return wdGet({ action: 'wbgetentities', ids: ids.join('|'), props: 'claims|labels', languages: 'en', languagefallback: '1' })
+      .then(function (d) { return d.entities || {}; });
+  }
+  function wdFold(s) { return String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim(); }
+  function wdLabel(e) {
+    if (!e || !e.labels) return '';
+    if (e.labels.en) return e.labels.en.value;
+    var k = Object.keys(e.labels)[0];
+    return k ? e.labels[k].value : '';
+  }
+  function wdClaims(e, p) { return e && e.claims && e.claims[p] ? e.claims[p].filter(function (c) { return c.rank !== 'deprecated' && c.mainsnak && c.mainsnak.snaktype === 'value'; }) : []; }
+  function wdIds(e, p) { return wdClaims(e, p).map(function (c) { var v = c.mainsnak.datavalue.value; return v && v.id; }).filter(Boolean); }
+  function wdYear(e) {
+    var c = wdClaims(e, 'P571')[0];
+    if (!c) return '';
+    var v = c.mainsnak.datavalue.value, m = /^([+-])0*(\d+)-/.exec(v.time || '');
+    if (!m) return '';
+    var n = m[2] + (m[1] === '-' ? ' BC' : ''), p = v.precision;
+    if (p >= 9) {
+      var circa = ((c.qualifiers || {}).P1480 || []).some(function (q) { return q.datavalue && q.datavalue.value && q.datavalue.value.id === 'Q5727902'; });
+      return (circa ? 'c. ' : '') + n;
+    }
+    if (p === 8) return 'c. ' + n;
+    return '';
+  }
+  function wdArtistMatches(label, typed) {
+    var a = wdFold(typed), l = wdFold(label);
+    if (!a || !l) return false;
+    if (a === l || l.indexOf(a) >= 0 || a.indexOf(l) >= 0) return true;
+    var lt = l.split(' '), at = a.split(' ');
+    return lt[lt.length - 1] === at[at.length - 1] && lt[0].charAt(0) === at[0].charAt(0);
+  }
+  // Our medium choices from Wikidata's "made from material" labels. Anything we cannot place stays empty.
+  function wdMedium(labels) {
+    var t = ' ' + labels.map(wdFold).join(' | ') + ' ';
+    function has(re) { return re.test(t); }
+    var oil = has(/ oil /), wood = has(/ (wood|panel|poplar|oak|walnut|cedar|linden|lime) /);
+    if (oil && has(/ canvas /)) return 'Oil on canvas';
+    if (oil && has(/ copper /)) return 'Oil on copper';
+    if (oil && has(/ (cardboard|board) /)) return 'Oil on board';
+    if (oil && has(/ paper /)) return 'Oil on paper';
+    if (oil && wood) return 'Oil on panel';
+    if (has(/ egg tempera /) && !has(/ canvas /)) return wood ? 'Tempera on panel' : 'Egg tempera';
+    if (has(/ tempera /) && wood) return 'Tempera on panel';
+    if (has(/ fresco /)) return 'Fresco';
+    if (has(/ acrylic /) && has(/ canvas /)) return 'Acrylic on canvas';
+    if (has(/ watercolou?r /)) return 'Watercolor';
+    if (has(/ gouache /)) return 'Gouache';
+    if (has(/ pastel /)) return 'Pastel';
+    if (has(/ charcoal /)) return 'Charcoal';
+    if (has(/ graphite /)) return 'Graphite';
+    if (has(/ ink /) && has(/ paper /)) return 'Ink on paper';
+    if (has(/ encaustic /)) return 'Encaustic';
+    if (has(/ bronze /)) return 'Bronze';
+    if (has(/ marble /)) return 'Marble';
+    if (has(/ terracotta /)) return 'Terracotta';
+    if (has(/ plaster /)) return 'Plaster';
+    if (has(/ (stone|limestone|sandstone|granite) /)) return 'Stone';
+    if (oil) return 'Oil on canvas';
+    return '';
+  }
+  function wdMovementNames(labels) {
+    var names = allMovements().map(function (m) { return m.name; }), out = [];
+    labels.forEach(function (l) {
+      var f = wdFold(l);
+      var hit = names.filter(function (n) { return wdFold(n) === f; })[0] ||
+        names.filter(function (n) { var g = wdFold(n); return g && (f.indexOf(g) >= 0 || g.indexOf(f) >= 0) && Math.min(g.length, f.length) >= 5; })[0];
+      if (hit && out.indexOf(hit) === -1) out.push(hit);
+    });
+    return out.slice(0, 3);
+  }
+  async function wikiLookup(title, artist) {
+    title = norm(title); artist = norm(artist);
+    if (!title) return null;
+    var found = await wdGet({ action: 'wbsearchentities', search: title, language: 'en', uselang: 'en', type: 'item', limit: '25' });
+    var ids = (found.search || []).map(function (x) { return x.id; });
+    if (!ids.length) return null;
+    var ents = await wdEntities(ids);
+    var cands = ids.map(function (id) { return ents[id]; }).filter(function (e) { return e && wdIds(e, 'P170').length; });
+    if (!cands.length) return null;
+    var ft = wdFold(title);
+    var creatorIds = [];
+    cands.forEach(function (e) { wdIds(e, 'P170').forEach(function (c) { creatorIds.push(c); }); });
+    var linked = await wdEntities(creatorIds);
+    var scored = cands.map(function (e) {
+      var l = wdFold(wdLabel(e));
+      var t = l === ft ? 2 : (l && (l.indexOf(ft) >= 0 || ft.indexOf(l) >= 0) ? 1 : 0);
+      var names = wdIds(e, 'P170').map(function (c) { return wdLabel(linked[c]); });
+      var aOk = !artist || names.some(function (n) { return wdArtistMatches(n, artist); });
+      var score = t * 10 + (artist && aOk ? 5 : 0) + (wdIds(e, 'P195').length ? 1 : 0) + (wdClaims(e, 'P571').length ? 1 : 0);
+      return { e: e, t: t, ok: t > 0 && aOk, score: score, names: names };
+    }).filter(function (x) { return x.ok; }).sort(function (a, b) { return b.score - a.score; });
+    if (!scored.length) return null;
+    var best = scored[0];
+    if (!artist) {
+      var exact = scored.filter(function (x) { return x.t === 2; });
+      if (best.t !== 2 || exact.length !== 1) return null; // a bare title is too ambiguous
+    } else if (scored.length > 1 && scored[1].score === best.score && wdFold(wdLabel(scored[1].e)) === wdFold(wdLabel(best.e)) && wdYear(scored[1].e) !== wdYear(best.e)) {
+      return null; // two works with the same title and artist: do not guess
+    }
+    var e = best.e;
+    var matIds = wdIds(e, 'P186'), mvIds = wdIds(e, 'P135');
+    var museumId = wdIds(e, 'P195')[0] || wdIds(e, 'P276')[0] || '';
+    var creatorId = wdIds(e, 'P170')[0];
+    var more = await wdEntities(matIds.concat(mvIds, museumId ? [museumId] : []));
+    var data = { title: wdLabel(e), artist: best.names[0] || '', year: wdYear(e), confidence: 'high' };
+    data.medium = wdMedium(matIds.map(function (id) { return wdLabel(more[id]); }));
+    var mvLabels = mvIds.map(function (id) { return wdLabel(more[id]); });
+    if (!mvLabels.length && creatorId && linked[creatorId]) {
+      var am = wdIds(linked[creatorId], 'P135');
+      var amEnts = await wdEntities(am);
+      mvLabels = am.map(function (id) { return wdLabel(amEnts[id]); });
+    }
+    data.movements = wdMovementNames(mvLabels);
+    var m = museumId ? more[museumId] : null;
+    if (m) {
+      data.museum = wdLabel(m);
+      var pc = wdClaims(m, 'P625')[0];
+      if (pc) { data.lat = pc.mainsnak.datavalue.value.latitude; data.lng = pc.mainsnak.datavalue.value.longitude; }
+      var country = wdIds(m, 'P17')[0] || '', up = wdIds(m, 'P131')[0] || '', cityLabel = '', first = '', step = 0, cur = up;
+      while (cur && step < 4) {
+        var ce = (await wdEntities([cur]))[cur];
+        if (!ce) break;
+        if (!first) first = wdLabel(ce);
+        if (!country) country = wdIds(ce, 'P17')[0] || '';
+        if (wdIds(ce, 'P31').some(function (c) { return WD_CITY.indexOf(c) >= 0; })) { cityLabel = wdLabel(ce); break; }
+        cur = wdIds(ce, 'P131')[0] || ''; step++;
+      }
+      data.city = cityLabel || first;
+      if (country) { var co = (await wdEntities([country]))[country]; data.country = wdLabel(co); }
+    }
+    return data;
+  }
+  var wikiAdapter = {
+    wiki: true,
+    limits: async function () { return { images: false }; },
+    json: async function () { return wikiLookup($('f-title').value, $('f-artist').value); }
+  };
+  function aiOn() { return !!sampleFn && !sampleFn.wiki; }
+
   /* ---------- host services ----------
      Everything the app asks of the place it runs in, asked for in one spot (hostService below).
      Each one is optional. When the host does not offer it, the app quietly hides that feature.
@@ -7031,6 +7187,7 @@ var WORLD_WATER = [
         }, 4000);
       }
     }
+    if (!sampleFn && localPhotos) { sampleFn = wikiAdapter; syncAutofill(); }
   }
   init();
 })();
