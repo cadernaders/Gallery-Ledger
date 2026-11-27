@@ -439,6 +439,8 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .where strong { color: var(--ink); font-weight: 600; }
 .where .pin { flex: none; margin-top: 3px; color: var(--accent); }
 .where.unknown { color: var(--muted); font-style: italic; }
+.dabout { margin: 10px 0 0; font-size: 14px; line-height: 1.5; color: var(--muted); }
+.dabout a { color: var(--accent); white-space: nowrap; }
 .notes { margin-top: 8px; font-size: 14px; color: var(--ink); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; }
 .foot { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 14px; margin-top: 8px; }
 .pill { display: inline-block; white-space: nowrap; flex: none; font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: 999px; }
@@ -1697,7 +1699,7 @@ body.plan-open .addpop { z-index: 26; bottom: calc(env(safe-area-inset-bottom, 0
         <button type="button" class="btn" id="copyBackup">Copy</button>
       </div>
     </section>
-    <p class="buildline" id="buildLine">Version 2026-11-27 19:05</p>
+    <p class="buildline" id="buildLine">Version 2026-11-27 23:45</p>
       </div>
 </div>
 
@@ -2851,6 +2853,7 @@ var WORLD_WATER = [
           ? factRow(pinIcon(), [it.museum ? el('strong', { text: it.museum }) : null, it.museum && loc ? ', ' : null, loc])
           : factRow(pinIcon(), 'Museum not set', 'unknown'),
         seenFact(it)),
+      it.about ? el('p', { class: 'dabout' }, it.about + ' ', /^https:\/\/[a-z.]*wikipedia\.org\//.test(it.aboutUrl || '') ? el('a', { href: it.aboutUrl, target: '_blank', rel: 'noopener', text: 'Wikipedia' }) : null) : null,
       it.notes ? el('p', { class: 'dnotes', text: it.notes }) : null,
       detailActions(it, onClose)
     ];
@@ -5456,6 +5459,8 @@ var WORLD_WATER = [
       notes: norm($('f-notes').value)
     };
     if (asDraft) it.draft = true;
+    var ab = draft.about !== undefined ? draft.about : (existing && existing.about ? { text: existing.about, url: existing.aboutUrl } : null);
+    if (ab && ab.text) { it.about = ab.text; if (ab.url) it.aboutUrl = ab.url; }
     if (yearEstSrc && it.year === yearEstVal) it.yearEst = yearEstSrc;
     if (draftFav) it.favorite = true;
     var museumKey = it.museum.toLowerCase();
@@ -5950,6 +5955,10 @@ var WORLD_WATER = [
       var la = Number(data.lat), lo = Number(data.lng);
       if (data.lat != null && data.lng != null && isFinite(la) && isFinite(lo) && Math.abs(la) <= 90 && Math.abs(lo) <= 180 && !(la === 0 && lo === 0)) {
         draft.autoCoords = { lat: la, lng: lo, museum: norm($('f-museum').value).toLowerCase() };
+      }
+      if (data.about && /^https:\/\/[a-z.]*wikipedia\.org\//.test(String(data.aboutUrl || ''))) {
+        draft.about = { text: norm(data.about).slice(0, 600), url: String(data.aboutUrl).slice(0, 300) };
+        filled++;
       }
       var newTitle = norm(data.title).slice(0, 160);
       var oldTitle = norm($('f-title').value);
@@ -6985,6 +6994,7 @@ var WORLD_WATER = [
           country: norm(p.country).slice(0, 120), notes: norm(p.notes).slice(0, 4000),
           movements: movList(p).map(norm).filter(Boolean).slice(0, 10)
         };
+        if (norm(p.about)) { it.about = norm(p.about).slice(0, 600); if (/^https:\/\/[a-z.]*wikipedia\.org\//.test(String(p.aboutUrl || ''))) it.aboutUrl = String(p.aboutUrl).slice(0, 300); }
         if (p.favorite === true) it.favorite = true;
         if (p.example === true) it.example = true;
         if (typeof p.lat === 'number' && typeof p.lng === 'number' && isFinite(p.lat) && isFinite(p.lng)) { it.lat = p.lat; it.lng = p.lng; }
@@ -7096,7 +7106,7 @@ var WORLD_WATER = [
   function wdEntities(ids) {
     ids = ids.filter(function (x, i) { return x && ids.indexOf(x) === i; }).slice(0, 50);
     if (!ids.length) return Promise.resolve({});
-    return wdGet({ action: 'wbgetentities', ids: ids.join('|'), props: 'claims|labels', languages: 'en', languagefallback: '1' })
+    return wdGet({ action: 'wbgetentities', ids: ids.join('|'), props: 'claims|labels|sitelinks', languages: 'en', languagefallback: '1' })
       .then(function (d) { return d.entities || {}; });
   }
   function wdFold(s) { return String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim(); }
@@ -7210,6 +7220,21 @@ var WORLD_WATER = [
       mvLabels = am.map(function (id) { return wdLabel(amEnts[id]); });
     }
     data.movements = wdMovementNames(mvLabels);
+    try {
+      var enTitle = e.sitelinks && e.sitelinks.enwiki && e.sitelinks.enwiki.title;
+      if (enTitle) {
+        var sr = await withTimeout(fetch('https://en.wikipedia.org/api/rest_v1/page/summary/' + encodeURIComponent(enTitle.replace(/ /g, '_'))), 8000);
+        if (sr.ok) {
+          var sj = await sr.json();
+          var ex = norm(sj.extract);
+          if (ex && sj.type !== 'disambiguation') {
+            if (ex.length > 420) { var cut = ex.slice(0, 420), dot = cut.lastIndexOf('. '); ex = dot > 120 ? cut.slice(0, dot + 1) : cut.replace(/\s+\S*$/, '') + '\u2026'; }
+            data.about = ex;
+            data.aboutUrl = (sj.content_urls && sj.content_urls.desktop && sj.content_urls.desktop.page) || ('https://en.wikipedia.org/wiki/' + encodeURIComponent(enTitle.replace(/ /g, '_')));
+          }
+        }
+      }
+    } catch (aboutErr) { /* the description is a bonus */ }
     var m = museumId ? more[museumId] : null;
     if (m) {
       data.museum = wdLabel(m);
