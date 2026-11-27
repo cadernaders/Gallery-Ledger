@@ -1697,7 +1697,7 @@ body.plan-open .addpop { z-index: 26; bottom: calc(env(safe-area-inset-bottom, 0
         <button type="button" class="btn" id="copyBackup">Copy</button>
       </div>
     </section>
-    <p class="buildline" id="buildLine">Version 2026-11-27 18:05</p>
+    <p class="buildline" id="buildLine">Version 2026-11-27 18:25</p>
       </div>
 </div>
 
@@ -4254,13 +4254,26 @@ var WORLD_WATER = [
     delete rec.photoKey; delete rec.photoFile;
     if (key && SAMPLE_PHOTOS[key]) return dataUrlToBlob(SAMPLE_PHOTOS[key]);
     if (!file) return null;
+    var API = 'https://commons.wikimedia.org/w/api.php?action=query&format=json&origin=*&prop=imageinfo&iiprop=url&iiurlwidth=900&';
+    async function getJson(u) {
+      var ctl = new AbortController(), t = setTimeout(function () { ctl.abort(); }, 15000);
+      try { var r = await fetch(u, { signal: ctl.signal }); return r.ok ? await r.json() : null; } finally { clearTimeout(t); }
+    }
+    function thumbOf(j) {
+      var pages = j && j.query && j.query.pages; if (!pages) return null;
+      for (var k in pages) { var ii = pages[k].imageinfo; if (ii && ii[0] && (ii[0].thumburl || ii[0].url)) return ii[0].thumburl || ii[0].url; }
+      return null;
+    }
     try {
-      var ctl = new AbortController(), t = setTimeout(function () { ctl.abort(); }, 12000);
-      var r = await fetch('https://commons.wikimedia.org/wiki/Special:FilePath/' + encodeURIComponent(file) + '?width=900', { signal: ctl.signal });
-      clearTimeout(t);
+      var url = thumbOf(await getJson(API + 'titles=' + encodeURIComponent('File:' + file)));
+      if (!url) url = thumbOf(await getJson(API + 'generator=search&gsrnamespace=6&gsrlimit=1&gsrsearch=' + encodeURIComponent(rec.title + ' ' + rec.artist + ' filetype:bitmap')));
+      if (!url) return null;
+      var ctl2 = new AbortController(), t2 = setTimeout(function () { ctl2.abort(); }, 25000);
+      var r = await fetch(url, { signal: ctl2.signal });
+      clearTimeout(t2);
       if (!r.ok) return null;
-      var b = await r.blob();
-      return b && /^image\//.test(b.type) ? b : null;
+      var bl = await r.blob();
+      return bl && /^image\//.test(bl.type) ? bl : null;
     } catch (e) { return null; }
   }
   async function addSamples() {
