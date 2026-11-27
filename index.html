@@ -1697,7 +1697,7 @@ body.plan-open .addpop { z-index: 26; bottom: calc(env(safe-area-inset-bottom, 0
         <button type="button" class="btn" id="copyBackup">Copy</button>
       </div>
     </section>
-    <p class="buildline" id="buildLine">Version 2026-11-27 17:45</p>
+    <p class="buildline" id="buildLine">Version 2026-11-27 18:05</p>
       </div>
 </div>
 
@@ -4240,28 +4240,49 @@ var WORLD_WATER = [
   var SAMPLES = [
     { photoKey: 'mona', title: 'Mona Lisa', artist: 'Leonardo da Vinci', year: '1503', medium: 'Oil on wood', movements: ['High Renaissance'], status: 'seen', museum: 'Louvre Museum', city: 'Paris', country: 'France', lat: 48.8606, lng: 2.3376, favorite: true },
     { photoKey: 'starry', title: 'The Starry Night', artist: 'Vincent van Gogh', year: '1889', medium: 'Oil on canvas', movements: ['Post-Impressionism'], status: 'want', museum: 'Museum of Modern Art', city: 'New York', country: 'United States', lat: 40.7614, lng: -73.9776 },
-    { photoKey: 'pearl', title: 'Girl with a Pearl Earring', artist: 'Johannes Vermeer', year: '1665', medium: 'Oil on canvas', movements: ['Baroque'], status: 'want', museum: 'Mauritshuis', city: 'The Hague', country: 'Netherlands', lat: 52.0804, lng: 4.3141 }
+    { photoKey: 'pearl', title: 'Girl with a Pearl Earring', artist: 'Johannes Vermeer', year: '1665', medium: 'Oil on canvas', movements: ['Baroque'], status: 'want', museum: 'Mauritshuis', city: 'The Hague', country: 'Netherlands', lat: 52.0804, lng: 4.3141 },
+    { photoFile: 'Tsunami_by_hokusai_19th_century.jpg', title: 'The Great Wave off Kanagawa', artist: 'Katsushika Hokusai', year: '1831', medium: 'Woodblock print', movements: ['Ukiyo-e'], status: 'want', museum: 'Metropolitan Museum of Art', city: 'New York', country: 'United States', lat: 40.7794, lng: -73.9632 },
+    { photoFile: 'Las_Meninas,_by_Diego_Vel\u00e1zquez,_from_Prado_in_Google_Earth.jpg', title: 'Las Meninas', artist: 'Diego Vel\u00e1zquez', year: '1656', medium: 'Oil on canvas', movements: ['Baroque'], status: 'want', museum: 'Museo del Prado', city: 'Madrid', country: 'Spain', lat: 40.4138, lng: -3.6921 },
+    { photoFile: 'Sandro_Botticelli_-_La_nascita_di_Venere_-_Google_Art_Project_-_edited.jpg', title: 'The Birth of Venus', artist: 'Sandro Botticelli', year: '1485', medium: 'Tempera on canvas', movements: ['Early Renaissance'], status: 'want', museum: 'Uffizi Gallery', city: 'Florence', country: 'Italy', lat: 43.7678, lng: 11.2553 },
+    { photoFile: 'Monet_-_Impression,_Sunrise.jpg', title: 'Impression, Sunrise', artist: 'Claude Monet', year: '1872', medium: 'Oil on canvas', movements: ['Impressionism'], status: 'want', museum: 'Mus\u00e9e Marmottan Monet', city: 'Paris', country: 'France', lat: 48.8594, lng: 2.2675 },
+    { photoFile: 'The_Night_Watch_-_HD.jpg', title: 'The Night Watch', artist: 'Rembrandt van Rijn', year: '1642', medium: 'Oil on canvas', movements: ['Baroque'], status: 'want', museum: 'Rijksmuseum', city: 'Amsterdam', country: 'Netherlands', lat: 52.36, lng: 4.8852 },
+    { photoFile: 'The_Kiss_-_Gustav_Klimt_-_Google_Cultural_Institute.jpg', title: 'The Kiss', artist: 'Gustav Klimt', year: '1908', medium: 'Oil on canvas', movements: ['Symbolism and Art Nouveau'], status: 'want', museum: 'Belvedere', city: 'Vienna', country: 'Austria', lat: 48.1916, lng: 16.3808 },
+    { photoFile: 'Caspar_David_Friedrich_-_Wanderer_above_the_sea_of_fog.jpg', title: 'Wanderer above the Sea of Fog', artist: 'Caspar David Friedrich', year: '1818', medium: 'Oil on canvas', movements: ['Romanticism'], status: 'want', museum: 'Hamburger Kunsthalle', city: 'Hamburg', country: 'Germany', lat: 53.5478, lng: 10.0006 }
   ];
+  async function samplePhotoBlob(rec) {
+    var key = rec.photoKey, file = rec.photoFile;
+    delete rec.photoKey; delete rec.photoFile;
+    if (key && SAMPLE_PHOTOS[key]) return dataUrlToBlob(SAMPLE_PHOTOS[key]);
+    if (!file) return null;
+    try {
+      var ctl = new AbortController(), t = setTimeout(function () { ctl.abort(); }, 12000);
+      var r = await fetch('https://commons.wikimedia.org/wiki/Special:FilePath/' + encodeURIComponent(file) + '?width=900', { signal: ctl.signal });
+      clearTimeout(t);
+      if (!r.ok) return null;
+      var b = await r.blob();
+      return b && /^image\//.test(b.type) ? b : null;
+    } catch (e) { return null; }
+  }
   async function addSamples() {
     try {
       for (var i = 0; i < SAMPLES.length; i++) {
         var rec = Object.assign({ id: newId(), no: nextNo() + i, createdAt: Date.now() + i, example: true, dateSeen: '', notes: '' }, SAMPLES[i]);
-        var key = rec.photoKey; delete rec.photoKey;
+        var blob = await samplePhotoBlob(rec);
         var upId = null;
-        if (assets && SAMPLE_PHOTOS[key]) {
-          try { var up = await assets.upload(dataUrlToBlob(SAMPLE_PHOTOS[key]), { type: 'image/jpeg' }); upId = up.id; rec.photoId = up.id; rec.photoIds = [up.id]; }
+        if (assets && blob) {
+          try { var up = await assets.upload(blob, { type: 'image/jpeg' }); upId = up.id; rec.photoId = up.id; rec.photoIds = [up.id]; }
           catch (e) { /* the example is added without its photo */ }
         }
         try { await saveItem(rec); } catch (e) { if (upId) { try { await assets.delete(upId); } catch (e2) { /* ignore */ } } throw e; }
       }
-      toast('Three examples added');
+      toast('Ten examples added');
     } catch (e) { toast('Could not add the examples.'); }
   }
   function welcomeView() {
     return el('div', { class: 'welcome' },
       el('div', { class: 'welcome-btns' },
         el('button', { type: 'button', class: 'btn primary', onclick: function () { openSheet(null); } }, 'Add your first artwork'),
-        el('button', { type: 'button', class: 'btn', onclick: addSamples }, 'Try three examples')));
+        el('button', { type: 'button', class: 'btn', onclick: addSamples }, 'Try ten examples')));
   }
 
   /* ----- the welcome tour: a short walk through the app, shown first on an empty ledger ----- */
@@ -4349,7 +4370,7 @@ var WORLD_WATER = [
       try { standalone = !!window.navigator.standalone || (window.matchMedia && matchMedia('(display-mode: standalone)').matches); } catch (e) { /* show the tip */ }
       return el('div', { class: 'tbody' }, tourSteps(steps),
         standalone ? null : el('p', { class: 'ts-note', text: 'Tip: in Safari, tap Share, then Add to Home Screen, and Gallery Ledger will open like a regular app.' }),
-        allItems.length ? null : el('button', { type: 'button', class: 'btn', onclick: function () { closeTour(); addSamples(); } }, 'Try three examples'));
+        allItems.length ? null : el('button', { type: 'button', class: 'btn', onclick: function () { closeTour(); addSamples(); } }, 'Try ten examples'));
     } }
   ];
   var tourStep = 0, tourChecked = false, tourDir = '';
