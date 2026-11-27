@@ -869,6 +869,10 @@ body.is-empty .top { margin-bottom: 18px; }
 .addmenu button:hover, .addmenu button:focus-visible { background: var(--surface-2); }
 .morebtn { display: grid; place-items: center; width: 42px; height: 42px; color: var(--muted); background: transparent; border: 1px solid var(--line); border-radius: 10px; cursor: pointer; }
 .morebtn:hover { color: var(--ink); }
+.morebtn { position: relative; }
+.morebtn.due::after { content: ''; position: absolute; top: 7px; right: 7px; width: 7px; height: 7px; border-radius: 50%; background: var(--accent, #9e3a22); }
+.backup .backup-last { margin: 0 0 12px; color: var(--muted); }
+.backup .backup-last.due { color: var(--ink); }
 .stats { margin-top: 20px; padding: 12px 0; }
 .stat .n { font-size: 24px; }
 button.stat { font: inherit; color: inherit; background: none; border: 0; border-radius: 8px; cursor: pointer; }
@@ -1561,10 +1565,12 @@ body.plan-open .addpop { z-index: 26; bottom: calc(env(safe-area-inset-bottom, 0
     <section class="backup" aria-labelledby="backupTitle">
       <h2 id="backupTitle">Backup</h2>
       <p>Save a copy of your works and photos to keep somewhere safe, or restore one you saved before.</p>
+      <p class="backup-last" id="backupLast"></p>
       <div class="backup-row">
         <button type="button" class="btn" id="exportBtn">Export backup</button>
         <button type="button" class="btn" id="importBtn">Import backup</button>
         <input type="file" id="importFile" accept=".json,application/json" hidden>
+        <button type="button" class="btn" id="saveBackupBtn" hidden>Save backup file</button>
         <button type="button" class="btn danger" id="emptyBtn" hidden>Empty ledger</button>
       </div>
       <div class="emptybox" id="emptyBox" hidden>
@@ -4386,6 +4392,7 @@ var WORLD_WATER = [
   function renderCore() {
     try { localStorage.setItem('gallery-ledger-view', ui.view); } catch (e) { /* the view just won't be remembered */ }
     renderStats();
+    updateBackupStatus();
     updateStick();
     $('tabbar').hidden = !(items.length || drafts.length);
     document.body.classList.toggle('is-empty', !items.length);
@@ -6650,6 +6657,7 @@ var WORLD_WATER = [
     var btn = $('exportBtn'), note = $('backupNote');
     btn.disabled = true;
     $('backupFallback').hidden = true;
+    $('saveBackupBtn').hidden = true;
     note.textContent = 'Preparing your backup\u2026';
     try {
       var d = new Date();
@@ -6659,10 +6667,16 @@ var WORLD_WATER = [
         var b = await buildBackup(true);
         try {
           await downloadsApi.save({ filename: name, data: b.json });
+          markBackedUp(b.count);
           note.textContent = 'Backup ready: ' + b.count + (b.count === 1 ? ' work' : ' works') +
             (b.failed ? '. ' + b.failed + (b.failed === 1 ? ' photo' : ' photos') + ' could not be included.' : ' with their photos.');
         } catch (err) {
           if (err && err.code === 'declined') note.textContent = 'Cancelled. Nothing was saved.';
+          else if (err && err.code === 'needtap' && err.file) {
+            pendingBackup = { file: err.file, count: b.count };
+            $('saveBackupBtn').hidden = false;
+            note.textContent = 'Your backup is ready (' + b.count + (b.count === 1 ? ' work' : ' works') + '). Tap Save backup file, then choose Save to Files.';
+          }
           else { var t = await buildBackup(false); showBackupText(t.json, 'Saving a file did not work here. Copy this text into a note instead. It holds your work details but not the photos.'); }
         }
       } else {
@@ -6784,6 +6798,57 @@ var WORLD_WATER = [
     }
   });
 
+  /* ---------- backup bookkeeping ---------- */
+  var BK_KEY = 'gallery-ledger-last-backup', pendingBackup = null;
+  function lastBackup() { try { var v = JSON.parse(localStorage.getItem(BK_KEY) || 'null'); return v && typeof v.t === 'number' ? v : null; } catch (e) { return null; } }
+  function markBackedUp(count) { try { localStorage.setItem(BK_KEY, JSON.stringify({ t: Date.now(), count: count })); } catch (e) { /* just not remembered */ } updateBackupStatus(); }
+  function ago(t) {
+    var d = Math.floor((Date.now() - t) / 86400000);
+    return d < 1 ? 'today' : d === 1 ? 'yesterday' : d + ' days ago';
+  }
+  function updateBackupStatus() {
+    var el = $('backupLast'), btn = $('moreBtn');
+    if (!el || !btn) return;
+    var last = lastBackup(), n = items.length, due = false, text = '';
+    if (!n) { el.textContent = ''; el.className = 'backup-last'; btn.classList.remove('due'); return; }
+    if (!last) { text = 'You have not saved a backup yet.'; due = n >= 3; }
+    else {
+      var added = items.filter(function (x) { return typeof x.createdAt === 'number' && x.createdAt > last.t; }).length;
+      text = 'Last backup: ' + ago(last.t) + ', ' + last.count + (last.count === 1 ? ' work' : ' works') + (added ? '. ' + added + (added === 1 ? ' work' : ' works') + ' added since.' : '.');
+      due = added >= 10 || Date.now() - last.t > 30 * 86400000;
+    }
+    el.textContent = text;
+    el.className = 'backup-last' + (due ? ' due' : '');
+    btn.classList.toggle('due', due);
+  }
+  $('saveBackupBtn').addEventListener('click', async function () {
+    if (!pendingBackup) return;
+    try {
+      await navigator.share({ files: [pendingBackup.file] });
+      markBackedUp(pendingBackup.count);
+      $('backupNote').textContent = 'Backup saved: ' + pendingBackup.count + (pendingBackup.count === 1 ? ' work' : ' works') + ' with their photos.';
+      pendingBackup = null; $('saveBackupBtn').hidden = true;
+    } catch (e) { $('backupNote').textContent = e && e.name === 'AbortError' ? 'Cancelled. Nothing was saved.' : 'Saving did not work. Try again.'; }
+  });
+  function websiteDownloads() {
+    return {
+      save: async function (o) {
+        var file = new File([o.data], o.filename, { type: 'application/json' });
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          try { await navigator.share({ files: [file] }); return; }
+          catch (e) {
+            if (e && e.name === 'AbortError') { var d = new Error('declined'); d.code = 'declined'; throw d; }
+            if (e && e.name === 'NotAllowedError') { var n = new Error('needtap'); n.code = 'needtap'; n.file = file; throw n; }
+            throw e;
+          }
+        }
+        var url = URL.createObjectURL(file), a = document.createElement('a');
+        a.href = url; a.download = o.filename; document.body.appendChild(a); a.click(); a.remove();
+        setTimeout(function () { URL.revokeObjectURL(url); }, 60000);
+      }
+    };
+  }
+
   /* ---------- host services ----------
      Everything the app asks of the place it runs in, asked for in one spot (hostService below).
      Each one is optional. When the host does not offer it, the app quietly hides that feature.
@@ -6887,7 +6952,7 @@ var WORLD_WATER = [
     if (s) { sampleFn = s; syncAutofill(); }
 
     var dl = await hostService('downloads', function (x) { return typeof x.save === 'function'; });
-    if (dl) downloadsApi = dl;
+    if (dl) downloadsApi = dl; else downloadsApi = websiteDownloads();
 
     var a = await hostService('assets', function (x) { return typeof x.upload === 'function'; });
     if (a) { assets = a; render(); loadPending(); }
