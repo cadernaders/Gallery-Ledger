@@ -1595,7 +1595,7 @@ body.plan-open .addpop { z-index: 26; bottom: calc(env(safe-area-inset-bottom, 0
         <button type="button" class="btn" id="copyBackup">Copy</button>
       </div>
     </section>
-    <p class="buildline" id="buildLine">Version 2026-11-27 15:20</p>
+    <p class="buildline" id="buildLine">Version 2026-11-27 15:40</p>
       </div>
 </div>
 
@@ -5635,6 +5635,7 @@ var WORLD_WATER = [
   $('f-fav').addEventListener('click', scheduleSave);
   $('form').addEventListener('submit', async function (e) {
     e.preventDefault();
+    var wasDraft = editingDraft;
     await flushSave();
     // Done on a photo that is still a draft adds it to the gallery, with or without a title.
     if (lastSaved && lastSaved.draft) { promoteNow = true; dirty = true; await commitSheet(); promoteNow = false; }
@@ -5643,6 +5644,8 @@ var WORLD_WATER = [
     }
     wrapUpToast();
     closeSheet();
+    // Came from the Drafts list and others are waiting: land back on it.
+    if (wasDraft) setTimeout(function () { if (drafts.length && $('draftFab') && !$('draftFab').hidden && !$('draftBar').classList.contains('open')) popOpen('draftBar', 'draftFab'); }, 220);
   });
 
   $('statusBtn').addEventListener('click', function () {
