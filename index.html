@@ -671,6 +671,95 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .tour-foot > :last-child { justify-self: end; }
 .tour-foot .btn:disabled { opacity: .35; cursor: default; }
 @media (prefers-reduced-motion: reduce) { .tour-body { animation: none; } }
+/* ----- guide scenes: small looping pictures of each feature (prefix ts-) ----- */
+.ts-scene { position: relative; width: min(100%, 340px); min-height: 210px; padding: 14px 0; box-sizing: border-box; margin: 4px auto 6px; border: 1px solid var(--line); border-radius: 20px; background: var(--surface); overflow: hidden; display: grid; place-items: center; }
+.ts-art { background: linear-gradient(160deg, #c98b5b, #7a4a35); }
+.ts-art.b { background: linear-gradient(160deg, #7e9bb5, #34506b); }
+.ts-art.c { background: linear-gradient(160deg, #b9c28a, #55663a); }
+@keyframes ts-pop { 0% { opacity: 0; transform: translateY(12px) scale(.94); } 10%, 86% { opacity: 1; transform: none; } 96%, 100% { opacity: 0; transform: none; } }
+.ts-wall { display: flex; align-items: flex-end; gap: 14px; padding-bottom: 8px; }
+.ts-fr { border: 3px solid var(--ochre); padding: 5px; background: var(--surface-2); box-shadow: 0 2px 8px rgba(30, 20, 15, .12); animation: ts-pop 7s ease-in-out infinite both; }
+.ts-fr i { display: block; }
+.ts-fr:nth-child(1) i { width: 50px; height: 72px; }
+.ts-fr:nth-child(2) i { width: 78px; height: 58px; }
+.ts-fr:nth-child(3) i { width: 54px; height: 54px; }
+.ts-fr:nth-child(2) { animation-delay: .35s; }
+.ts-fr:nth-child(3) { animation-delay: .7s; }
+@keyframes ts-press { 0%, 8% { transform: none; } 12% { transform: scale(.86); } 18%, 100% { transform: none; } }
+@keyframes ts-fly { 0%, 10% { opacity: 0; transform: scale(.7); } 16% { opacity: 1; transform: scale(1); } 34% { opacity: 1; transform: scale(1); } 62% { opacity: .9; transform: translate(-134px, 16px) scale(.45); } 68%, 100% { opacity: 0; transform: translate(-134px, 16px) scale(.3); } }
+@keyframes ts-badge { 0%, 60% { transform: scale(1); } 68% { transform: scale(1.4); } 78%, 100% { transform: scale(1); } }
+.ts-snap { height: 210px; padding: 0; }
+.ts-bar { position: absolute; left: 0; right: 0; bottom: 0; height: 56px; border-top: 1px solid var(--line); background: var(--surface); display: grid; place-items: center; }
+.ts-plus { width: 60px; height: 46px; display: grid; place-items: center; color: var(--accent); animation: ts-press 7s ease-in-out infinite both; }
+.ts-fab { position: absolute; left: 14px; bottom: 68px; width: 44px; height: 44px; border-radius: 50%; background: var(--surface); border: 1px solid var(--line); box-shadow: 0 2px 8px rgba(30, 20, 15, .12); display: grid; place-items: center; color: var(--ink); }
+.ts-badge { position: absolute; top: -4px; right: -4px; min-width: 18px; height: 18px; border-radius: 9px; background: var(--accent); color: #fff; font: 600 11px/18px var(--font-body); text-align: center; animation: ts-badge 7s ease-in-out infinite both; }
+.ts-shot { position: absolute; left: 50%; bottom: 78px; width: 44px; height: 56px; margin-left: -22px; border: 3px solid var(--ochre); border-radius: 2px; opacity: 0; animation: ts-fly 7s ease-in-out infinite both; }
+.ts-snaphint { position: absolute; top: 14px; left: 0; right: 0; text-align: center; font-size: 12px; color: var(--muted); }
+@keyframes ts-card { 0% { opacity: 0; transform: translateX(40px); } 8%, 66% { opacity: 1; transform: none; } 76%, 100% { opacity: 0; transform: translateX(-50px); } }
+@keyframes ts-type { 0%, 14% { clip-path: inset(0 100% 0 0); opacity: 1; } 26%, 94% { clip-path: inset(0 0 0 0); opacity: 1; } 100% { clip-path: inset(0 0 0 0); opacity: 0; } }
+@keyframes ts-btn { 0%, 54% { transform: none; } 58% { transform: scale(.94); } 62%, 100% { transform: none; } }
+.ts-stack { position: relative; width: 236px; height: 184px; }
+.ts-card { position: absolute; inset: 0; background: var(--bg); border: 1px solid var(--line); border-radius: 14px; padding: 10px; display: grid; align-content: start; gap: 5px; box-shadow: 0 4px 14px rgba(30, 20, 15, .10); }
+.ts-card.back { transform: translate(8px, 8px) scale(.97); opacity: .65; box-shadow: none; }
+.ts-card.front { animation: ts-card 8s ease-in-out infinite both; }
+.ts-ph { height: 34px; border-radius: 6px; }
+.ts-row { display: flex; gap: 8px; align-items: baseline; border-bottom: 1px solid var(--line); padding-bottom: 3px; }
+.ts-row small { width: 44px; flex: none; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; font-size: 9px; }
+.ts-row span { font-family: var(--font-display); font-size: 15px; white-space: nowrap; animation: ts-type 8s steps(14) infinite both; }
+.ts-row.d1 span { animation-delay: .8s; }
+.ts-row.d2 span { animation-delay: 1.6s; }
+.ts-add { text-align: center; background: var(--accent); color: #fff; border-radius: 999px; font: 600 11px/26px var(--font-body); animation: ts-btn 8s ease-in-out infinite both; }
+.ts-toggle { position: absolute; bottom: 8px; left: 0; right: 0; text-align: center; font-size: 11px; color: var(--muted); }
+@keyframes ts-type2 { 0%, 4% { clip-path: inset(0 100% 0 0); opacity: 1; } 16%, 93% { clip-path: inset(0 0 0 0); opacity: 1; } 100% { clip-path: inset(0 0 0 0); opacity: 0; } }
+@keyframes ts-fillin { 0%, 40% { opacity: 0; background: transparent; } 46% { opacity: 1; background: var(--accent-soft); } 62%, 93% { opacity: 1; background: transparent; } 100% { opacity: 0; background: transparent; } }
+@keyframes ts-press2 { 0%, 34% { transform: none; } 38% { transform: scale(.94); } 42%, 100% { transform: none; } }
+.ts-af { width: 250px; display: grid; gap: 5px; }
+.ts-af .ts-row span { animation: ts-type2 8s steps(16) infinite both; }
+.ts-af .ts-row.d1 span { animation-delay: .9s; }
+.ts-af .ts-fill span { font-family: var(--font-body); font-size: 12px; padding: 1px 6px; border-radius: 5px; animation: ts-fillin 8s ease-in-out infinite both; }
+.ts-af .ts-fill.d1 span { animation-delay: .3s; }
+.ts-af .ts-fill.d2 span { animation-delay: .6s; }
+.ts-afbtn { justify-self: start; padding: 0 12px; background: var(--surface-2); border: 1px solid var(--line); border-radius: 8px; font: 600 11px/26px var(--font-body); animation: ts-press2 8s ease-in-out infinite both; }
+.ts-src { font-size: 10px; color: var(--muted); text-align: right; }
+@keyframes ts-lit { 0%, 2% { color: var(--muted); background: transparent; transform: none; } 6%, 22% { color: var(--accent); background: var(--accent-soft); transform: scale(1.1); } 28%, 100% { color: var(--muted); background: transparent; transform: none; } }
+.ts-tabs { display: flex; gap: 8px; }
+.ts-tab { width: 66px; display: grid; justify-items: center; gap: 4px; padding: 10px 0 8px; border-radius: 14px; color: var(--muted); font-size: 10px; animation: ts-lit 8s ease-in-out infinite both; }
+.ts-tab:nth-child(2) { animation-delay: 2s; }
+.ts-tab:nth-child(3) { animation-delay: 4s; }
+.ts-tab:nth-child(4) { animation-delay: 6s; }
+@keyframes ts-tick { 0%, 2% { background: transparent; border-color: var(--line); } 6%, 90% { background: var(--accent); border-color: var(--accent); } 100% { background: transparent; border-color: var(--line); } }
+@keyframes ts-dim { 0%, 2% { color: var(--ink); text-decoration: none; } 6%, 90% { color: var(--muted); text-decoration: line-through; } 100% { color: var(--ink); text-decoration: none; } }
+@keyframes ts-seg { 0%, 2% { transform: scaleX(0); } 8%, 90% { transform: scaleX(1); } 100% { transform: scaleX(0); } }
+.ts-plan { width: 256px; display: grid; gap: 9px; }
+.ts-plan h4 { margin: 0; font-family: var(--font-display); font-size: 17px; font-weight: 500; }
+.ts-plan small { color: var(--muted); font-size: 11px; }
+.ts-prog { display: flex; gap: 3px; }
+.ts-prog i { flex: 1; height: 5px; border-radius: 3px; background: var(--line); position: relative; overflow: hidden; }
+.ts-prog i::after { content: ""; position: absolute; inset: 0; background: var(--accent); transform-origin: left; animation: ts-seg 9s ease-in-out infinite both; }
+.ts-rw { display: flex; align-items: center; gap: 10px; font-size: 13px; }
+.ts-rw .ts-chk { width: 18px; height: 18px; flex: none; border-radius: 50%; border: 2px solid var(--line); animation: ts-tick 9s ease-in-out infinite both; }
+.ts-rw b { font-weight: 500; animation: ts-dim 9s ease-in-out infinite both; }
+.ts-rw.r1 .ts-chk, .ts-rw.r1 b, .ts-prog i:nth-child(1)::after { animation-delay: 2s; }
+.ts-rw.r2 .ts-chk, .ts-rw.r2 b, .ts-prog i:nth-child(2)::after { animation-delay: 3.6s; }
+.ts-rw.r3 .ts-chk, .ts-rw.r3 b, .ts-prog i:nth-child(3)::after { animation-delay: 5.2s; }
+@keyframes ts-file { 0%, 12% { opacity: 0; transform: translateX(0); } 18% { opacity: 1; } 55% { opacity: 1; transform: translateX(78px) scale(.9); } 62%, 100% { opacity: 0; transform: translateX(78px) scale(.6); } }
+@keyframes ts-ok { 0%, 58% { opacity: 0; transform: scale(.4); } 66%, 92% { opacity: 1; transform: scale(1); } 100% { opacity: 0; } }
+.ts-save { display: flex; align-items: center; gap: 34px; position: relative; }
+.ts-exp { padding: 0 12px; background: var(--surface-2); border: 1px solid var(--line); border-radius: 8px; font: 600 11px/30px var(--font-body); animation: ts-press 8s ease-in-out infinite both; }
+.ts-doc { position: absolute; left: 78px; top: 2px; color: var(--accent); animation: ts-file 8s ease-in-out infinite both; opacity: 0; }
+.ts-cloud { position: relative; color: var(--ink); }
+.ts-cloud .ts-okc { position: absolute; right: -8px; top: -8px; width: 20px; height: 20px; border-radius: 50%; background: var(--accent); color: #fff; display: grid; place-items: center; animation: ts-ok 8s ease-in-out infinite both; }
+@keyframes ts-ring { 0% { opacity: .5; transform: scale(.6); } 100% { opacity: 0; transform: scale(1.7); } }
+.ts-ready { position: relative; width: 96px; height: 96px; display: grid; place-items: center; color: var(--accent); }
+.ts-ring { position: absolute; inset: 0; border-radius: 50%; border: 2px solid var(--accent); animation: ts-ring 3s ease-out infinite both; }
+.ts-ring + .ts-ring { animation-delay: 1.5s; }
+.ts-note { margin: 0; padding: 12px 14px; border-radius: 12px; background: var(--surface-2); color: var(--muted); font-size: 14px; line-height: 1.45; }
+.tour-skip { position: absolute; top: calc(env(safe-area-inset-top, 0px) + 18px); right: max(18px, env(safe-area-inset-right, 0px)); height: 34px; padding: 0 14px; font-size: 13px; }
+@keyframes tour-fwd { from { opacity: 0; transform: translateX(26px); } to { opacity: 1; transform: none; } }
+@keyframes tour-back { from { opacity: 0; transform: translateX(-26px); } to { opacity: 1; transform: none; } }
+.tour-body.fwd { animation: tour-fwd .24s ease-out both; }
+.tour-body.back { animation: tour-back .24s ease-out both; }
+@media (prefers-reduced-motion: reduce) { .ts-scene * { animation: none !important; } .ts-shot { display: none; } .tour-body.fwd, .tour-body.back { animation: none; } }
 .welcome { padding: 32px 20px 24px; border: 1px dashed var(--line); border-radius: 10px; display: grid; gap: 14px; justify-items: center; text-align: center; }
 .welcome-btns { display: grid; gap: 10px; width: 100%; max-width: 300px; margin: 6px 0 8px; }
 .welcome-btns .btn { height: 44px; padding: 0 18px; width: 100%; }
@@ -1570,7 +1659,7 @@ body.plan-open .addpop { z-index: 26; bottom: calc(env(safe-area-inset-bottom, 0
     <label class="morerow switchrow" id="placardOfferRow" hidden><span>Offer to scan the museum label after a photo</span><input type="checkbox" id="placardOffer"></label>
     <label class="morerow switchrow" id="draftsRow"><span>Save new photos to Drafts<small>Turn off to add photos straight to your gallery.</small></span><input type="checkbox" id="draftsOnBox"></label>
     <button type="button" class="morerow" id="noPhotoBtn">Add a work without a photo</button>
-    <button type="button" class="morerow" id="tourBtn">Take the quick tour</button>
+    <button type="button" class="morerow" id="tourBtn">How it works</button>
     <section class="backup" aria-labelledby="backupTitle">
       <h2 id="backupTitle">Backup</h2>
       <p>Save a copy of your works and photos to keep somewhere safe, or restore one you saved before.</p>
@@ -1595,7 +1684,7 @@ body.plan-open .addpop { z-index: 26; bottom: calc(env(safe-area-inset-bottom, 0
         <button type="button" class="btn" id="copyBackup">Copy</button>
       </div>
     </section>
-    <p class="buildline" id="buildLine">Version 2026-11-27 15:40</p>
+    <p class="buildline" id="buildLine">Version 2026-11-27 16:40</p>
       </div>
 </div>
 
@@ -1605,6 +1694,7 @@ body.plan-open .addpop { z-index: 26; bottom: calc(env(safe-area-inset-bottom, 0
   <div class="tour-in">
     <p class="tour-brand">Gallery Ledger</p>
     <div class="wizdots" id="tourDots" role="img"></div>
+    <button type="button" class="btn tour-skip" id="tourSkip">Skip</button>
     <div class="tour-body" id="tourBody"></div>
   </div>
   <div class="tour-foot" id="tourFoot"></div>
@@ -4173,55 +4263,116 @@ var WORLD_WATER = [
       return el('li', null, el('span', { class: 'stepno', text: String(i + 1) }), el('span', null, el('strong', { text: t[0] }), el('span', { text: t[1] })));
     }));
   }
+  function sceneHTML(html) { var d = document.createElement('div'); d.innerHTML = html; return d.firstElementChild; }
+  function iconOf(sel, size) {
+    var src = document.querySelector(sel + ' svg');
+    if (!src) return '';
+    var c = src.cloneNode(true);
+    c.setAttribute('width', size); c.setAttribute('height', size); c.setAttribute('aria-hidden', 'true');
+    return c.outerHTML;
+  }
+  function sectionIcon(id, size) { return SECTION_ICONS[id] ? SECTION_ICONS[id].replace('width="22" height="22"', 'width="' + size + '" height="' + size + '"') : ''; }
+  var SVG_DOC = '<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h7l5 5v13H7z"/><path d="M14 3v5h5"/></svg>';
+  var SVG_CLOUD = '<svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7 18a4 4 0 0 1-.6-7.96A5.5 5.5 0 0 1 17 9a4.5 4.5 0 0 1 .5 9H7z"/></svg>';
+  var SVG_TICK = '<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+  var TOUR_SCENES = {
+    welcome: function () {
+      return sceneHTML('<div class="ts-scene" aria-hidden="true"><div class="ts-wall"><div class="ts-fr"><i class="ts-art"></i></div><div class="ts-fr"><i class="ts-art b"></i></div><div class="ts-fr"><i class="ts-art c"></i></div></div></div>');
+    },
+    snap: function () {
+      return sceneHTML('<div class="ts-scene ts-snap" aria-hidden="true"><p class="ts-snaphint">One tap, one photo</p><div class="ts-shot ts-art b"></div>' +
+        '<div class="ts-fab">' + iconOf('#draftFab', 22) + '<b class="ts-badge">3</b></div>' +
+        '<div class="ts-bar"><span class="ts-plus">' + iconOf('#quickBtn', 44) + '</span></div></div>');
+    },
+    drafts: function () {
+      return sceneHTML('<div class="ts-scene" aria-hidden="true"><div class="ts-stack"><div class="ts-card back"></div><div class="ts-card front"><div class="ts-ph ts-art c"></div>' +
+        '<div class="ts-row"><small>Title</small><span>Water Lilies</span></div><div class="ts-row d1"><small>Artist</small><span>Claude Monet</span></div><div class="ts-row d2"><small>Year</small><span>1906</span></div>' +
+        '<div class="ts-add">Add to gallery</div></div></div></div>');
+    },
+    autofill: function () {
+      return sceneHTML('<div class="ts-scene" aria-hidden="true"><div class="ts-af"><div class="ts-row"><small>Title</small><span>The Starry Night</span></div><div class="ts-row d1"><small>Artist</small><span>Vincent van Gogh</span></div>' +
+        '<div class="ts-afbtn">Autofill details</div>' +
+        '<div class="ts-row ts-fill"><small>Year</small><span>1889</span></div><div class="ts-row ts-fill d1"><small>Medium</small><span>Oil on canvas</span></div><div class="ts-row ts-fill d2"><small>Museum</small><span>MoMA, New York</span></div>' +
+        '<div class="ts-src">Source: Wikidata</div></div></div>');
+    },
+    ways: function () {
+      var tabs = [['gallery', 'Gallery'], ['timeline', 'Timeline'], ['artists', 'Artists'], ['museums', 'Museums']].map(function (t) {
+        return '<div class="ts-tab">' + sectionIcon(t[0], 26) + '<span>' + t[1] + '</span></div>';
+      }).join('');
+      return sceneHTML('<div class="ts-scene" aria-hidden="true"><div class="ts-tabs">' + tabs + '</div></div>');
+    },
+    plan: function () {
+      return sceneHTML('<div class="ts-scene" aria-hidden="true"><div class="ts-plan"><div><h4>Museo del Prado</h4><small>Works to see today</small></div>' +
+        '<div class="ts-prog"><i></i><i></i><i></i></div>' +
+        '<div class="ts-rw r1"><span class="ts-chk"></span><b>Las Meninas</b></div><div class="ts-rw r2"><span class="ts-chk"></span><b>The Third of May 1808</b></div><div class="ts-rw r3"><span class="ts-chk"></span><b>The Garden of Earthly Delights</b></div></div></div>');
+    },
+    safe: function () {
+      return sceneHTML('<div class="ts-scene" aria-hidden="true"><div class="ts-save"><span class="ts-exp">Export backup</span><span class="ts-doc">' + SVG_DOC + '</span><span class="ts-cloud">' + SVG_CLOUD + '<span class="ts-okc">' + SVG_TICK + '</span></span></div></div>');
+    },
+    ready: function () {
+      return sceneHTML('<div class="ts-scene" aria-hidden="true"><div class="ts-ready"><i class="ts-ring"></i><i class="ts-ring"></i>' + iconOf('#quickBtn', 56) + '</div></div>');
+    }
+  };
   var TOUR_PAGES = [
-    { h: 'Welcome to Gallery Ledger', lead: 'A personal catalogue of the art you\u2019ve seen, and the art you hope to see.', body: function () {
+    { scene: 'welcome', h: 'Welcome to Gallery Ledger', lead: 'A tool for gallery-goers, to keep track of all the art that inspires them.', body: function () {
       return el('ul', { class: 'tpoints' }, [
-        ['Keep your photos', 'Every work with its picture, so you can spot it at a glance.'],
-        ['Record the details', 'Artist, year, medium, art movement, and where it is kept.'],
-        ['Look at it your way', 'Browse by artist, museum, timeline or map.']
+        ['Photograph what moves you', 'Every work with its picture, so you can spot it at a glance.'],
+        ['Add the details at your own pace', 'Artist, year, medium, art movement and where it is kept.'],
+        ['Look back on it your way', 'Browse by artist, museum, timeline or map.']
       ].map(function (t) { return el('li', null, el('strong', { text: t[0] }), el('span', { text: t[1] })); }));
     } },
-    { h: 'Four ways to look', lead: 'Switch between them with the tabs along the bottom.', body: function () {
+    { scene: 'snap', h: 'Snap as you wander', lead: 'Tap + and take a photo. No typing, no stopping.', body: function () {
+      return tourSteps([
+        ['One photo per work', 'Take it, or choose photos you already have.'],
+        ['They wait in Drafts', 'The round button at the bottom left counts them. Keep walking and sort them out later.']
+      ]);
+    } },
+    { scene: 'drafts', h: 'Drafts make cataloguing easy', lead: 'Sit down with your photos when you are ready and go through them one by one.', body: function () {
+      return el('div', { class: 'tbody' }, tourSteps([
+        ['Open a draft', 'Crop the photo, or delete a shot you do not need, right on the page.'],
+        ['Add what you know', 'Or let Autofill suggest it for you.'],
+        ['Add to gallery', 'The Drafts list comes back, so you can pick up the next one.']
+      ]), el('p', { class: 'ts-note', text: 'Prefer to add works straight to your gallery? Turn off “Save new photos to Drafts” in the ⋯ menu.' }));
+    } },
+    { scene: 'autofill', h: 'Let Autofill do the typing', lead: 'Enter a title and an artist, then tap Autofill details.', body: function () {
+      return el('div', { class: 'tbody' }, tourSteps([
+        ['It looks the work up', 'On Wikidata, a free public encyclopedia of facts.'],
+        ['It fills the empty fields', 'Year, medium, museum, city and art movement. It never overwrites what you typed.']
+      ]), el('p', { class: 'ts-note', text: 'It works best for well-known works. Always glance over what it suggests.' }));
+    } },
+    { scene: 'ways', h: 'Four ways to look', lead: 'Switch between them with the tabs along the bottom.', body: function () {
       return el('ol', { class: 'tour' }, TOUR.map(function (t) {
-        var tid = t[0] === 'Works' ? 'gallery' : t[0].toLowerCase();
+        var tid = t[0].toLowerCase();
         var icon = null;
-        if (SECTION_ICONS[tid]) { icon = el('span', { class: 'tour-ico' }); icon.innerHTML = SECTION_ICONS[tid].replace('width="22" height="22"', 'width="18" height="18"'); }
+        if (SECTION_ICONS[tid]) { icon = el('span', { class: 'tour-ico' }); icon.innerHTML = sectionIcon(tid, 18); }
         return el('li', null, el('strong', null, icon, t[0]), el('span', { text: t[1] }));
       }));
     } },
-    { h: 'Add a work', lead: 'Tap Add in the bottom bar. Take a photo, choose from your library, or enter details by hand.', body: function () {
-      return tourSteps([
-        ['Start with a photo', 'Every photo is saved as a draft. Tap the drafts button at the bottom left to finish them.'],
-        ['Add what you know', 'Artist, year, art movement, and the museum.'],
-        ['Save whenever you like', 'Use the middle button to save early, or go all the way to the end.']
-      ]);
-    } },
-    { h: 'Quick add', lead: 'For works you come across. Snap them as you wander.', body: function () {
-      return tourSteps([
-        ['Say where you are', 'Tap the camera in the middle of the bottom bar, and type the museum name once.'],
-        ['Snap what catches your eye', 'One photo per work, no typing. Each one waits for you as a draft.'],
-        ['Sort it out later', 'Back home, open Drafts and fill in the details whenever you like.']
-      ]);
-    } },
-    { h: 'Plan a visit', lead: 'For works you already want to see. Bring them as a checklist.', body: function () {
+    { scene: 'plan', h: 'Plan a visit', lead: 'Heading to a museum? Bring the works you want to see as a checklist.', body: function () {
       return tourSteps([
         ['Save what you hope to see', 'Add each work as To see, with the museum filled in.'],
-        ['Open the museum\u2019s plan', 'In Museums, tap Plan a visit under the museum you\u2019re heading to.'],
-        ['Tick things off as you go', 'Mark each work when you find it, and snap any surprises with Quick add.']
+        ['Open the museum’s plan', 'In Museums, tap Plan a visit under the museum.'],
+        ['Tick things off as you go', 'And snap any surprises with +.']
       ]);
     } },
-    { h: 'Keep it safe', lead: 'Your works and photos are saved with this page. Every so often, make a copy.', body: function () {
-      return tourSteps([
-        ['Export a backup', 'Tap the three dots at the top right, then Export backup.'],
-        ['Keep the file somewhere safe', 'Cloud storage or an email to yourself both work well.'],
-        ['Restore it any time', 'In the same menu, tap Import backup and choose the file.']
-      ]);
+    { scene: 'safe', h: 'Keep it safe', lead: 'Your works and photos live on this phone, so make a copy now and then.', body: function () {
+      var steps = [
+        ['Export a backup', 'Tap ⋯, then Export backup, and choose Save to Files.'],
+        ['Keep it in iCloud Drive', 'Or email it to yourself.'],
+        ['Restore any time', 'In the same menu, tap Import backup.']
+      ];
+      var standalone = false;
+      try { standalone = !!window.navigator.standalone || (window.matchMedia && matchMedia('(display-mode: standalone)').matches); } catch (e) { /* show the tip */ }
+      return el('div', { class: 'tbody' }, tourSteps(steps), standalone ? null : el('p', { class: 'ts-note', text: 'Tip: in Safari, tap Share, then Add to Home Screen, to open Gallery Ledger like an app.' }));
+    } },
+    { scene: 'ready', h: 'You are all set', lead: 'Start with a photo, or look around with three examples first.', body: function () {
+      return allItems.length ? null : el('button', { type: 'button', class: 'btn', onclick: function () { closeTour(); addSamples(); } }, 'Try three examples');
     } }
   ];
-  var tourStep = 0, tourChecked = false;
+  var tourStep = 0, tourChecked = false, tourDir = '';
   function openTour() {
     if (!$('moreOverlay').hidden) closeMore();
-    tourStep = 0;
+    tourStep = 0; tourDir = '';
     $('tourPage').hidden = false;
     document.body.style.overflow = 'hidden';
     renderTour();
@@ -4231,23 +4382,45 @@ var WORLD_WATER = [
     try { localStorage.setItem('gallery-ledger-welcomed', '1'); } catch (e) { /* the tour may show again next time */ }
     if ($('overlay').hidden && $('planOverlay').hidden) document.body.style.overflow = '';
   }
+  function tourGo(d) {
+    var n = tourStep + d;
+    if (n < 0 || n >= TOUR_PAGES.length) return;
+    tourStep = n; tourDir = d > 0 ? 'fwd' : 'back';
+    renderTour();
+  }
   function renderTour() {
     var pg = TOUR_PAGES[tourStep], last = tourStep === TOUR_PAGES.length - 1;
     var body = $('tourBody');
-    body.replaceChildren(el('h2', { id: 'tourH', text: pg.h }), el('p', { class: 'tlead', text: pg.lead }), pg.body());
-    body.style.animation = 'none'; void body.offsetWidth; body.style.animation = '';
+    body.className = 'tour-body' + (tourDir ? ' ' + tourDir : '');
+    body.replaceChildren(TOUR_SCENES[pg.scene](), el('h2', { id: 'tourH', text: pg.h }), el('p', { class: 'tlead', text: pg.lead }), pg.body());
     $('tourPage').querySelector('.tour-in').scrollTop = 0;
     var dots = $('tourDots');
     dots.replaceChildren();
     dots.setAttribute('aria-label', 'Page ' + (tourStep + 1) + ' of ' + TOUR_PAGES.length);
     TOUR_PAGES.forEach(function (_, i) { dots.append(el('i', { class: i < tourStep ? 'done' : i === tourStep ? 'now' : '' })); });
+    var skip = $('tourSkip');
+    if (skip) skip.hidden = last;
     $('tourFoot').replaceChildren(
-      el('button', { type: 'button', class: 'btn', disabled: tourStep === 0 ? 'disabled' : null, onclick: function () { tourStep--; renderTour(); } }, 'Back'),
+      el('button', { type: 'button', class: 'btn', style: tourStep === 0 ? 'visibility:hidden' : null, onclick: function () { tourGo(-1); } }, 'Back'),
+      last ? el('span') : el('span'),
       last
-        ? el('button', { type: 'button', class: 'btn primary', onclick: closeTour }, 'Start cataloging')
-        : el('button', { type: 'button', class: 'btn', onclick: closeTour }, 'Skip'),
-      el('button', { type: 'button', class: 'btn primary', disabled: last ? 'disabled' : null, onclick: function () { tourStep++; renderTour(); } }, 'Next'));
+        ? el('button', { type: 'button', class: 'btn primary', onclick: closeTour }, 'Start cataloguing')
+        : el('button', { type: 'button', class: 'btn primary', onclick: function () { tourGo(1); } }, 'Next'));
   }
+  (function () {
+    var x0 = 0, y0 = 0, on = false;
+    var pg = document.getElementById('tourPage');
+    pg.addEventListener('touchstart', function (e) { var t = e.touches[0]; x0 = t.clientX; y0 = t.clientY; on = true; }, { passive: true });
+    pg.addEventListener('touchend', function (e) {
+      if (!on) return; on = false;
+      var t = e.changedTouches[0], dx = t.clientX - x0, dy = t.clientY - y0;
+      if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5) tourGo(dx < 0 ? 1 : -1);
+    }, { passive: true });
+    document.addEventListener('keydown', function (e) {
+      if ($('tourPage').hidden) return;
+      if (e.key === 'ArrowRight') tourGo(1); else if (e.key === 'ArrowLeft') tourGo(-1);
+    });
+  })();
   function maybeShowTour() {
     if (tourChecked) return;
     tourChecked = true;
@@ -4256,7 +4429,7 @@ var WORLD_WATER = [
     if (!seen && !allItems.length) openTour();
   }
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !$('tourPage').hidden) closeTour(); });
-  document.addEventListener('DOMContentLoaded', function () { var b = $('tourBtn'); if (b) b.addEventListener('click', openTour); });
+  document.addEventListener('DOMContentLoaded', function () { var b = $('tourBtn'); if (b) b.addEventListener('click', openTour); var sk = $('tourSkip'); if (sk) sk.addEventListener('click', closeTour); });
 
   /* ----- visit plan: the works still to see at one museum ----- */
   var plan = { key: null, complete: null, done: {}, start: 0, museum: '', city: '', country: '' };
