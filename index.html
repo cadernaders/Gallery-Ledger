@@ -1594,7 +1594,7 @@ body.plan-open .addpop { z-index: 26; bottom: calc(env(safe-area-inset-bottom, 0
         <button type="button" class="btn" id="copyBackup">Copy</button>
       </div>
     </section>
-    <p class="buildline" id="buildLine">Version 2026-11-27 13:00</p>
+    <p class="buildline" id="buildLine">Version 2026-11-27 13:20</p>
       </div>
 </div>
 
@@ -5295,6 +5295,7 @@ var WORLD_WATER = [
       if (!existing) sheetCreated = true;
       lastSaved = it;
       editingId = it.id; editingDraft = !!it.draft;
+      window.__curWorkId = it.id; // so this work is not counted as a copy of itself
       $('f-del').hidden = false; syncMoreBtn();
       setSaveState(asDraft ? 'draft' : 'saved');
       updateComplete();
