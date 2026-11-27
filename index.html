@@ -2102,7 +2102,8 @@ var WORLD_WATER = [
   function placeLine(it) { return [it.city, it.country].map(norm).filter(Boolean).join(', '); }
   function newId() { return 'p' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
   // Where a stored photo is served from. This is the only place the address is built, so moving the app to another host means changing this one line.
-  function photoUrl(id) { return '/_blob/' + id; }
+  var photoBase = '/_blob/';
+  function photoUrl(id) { return photoBase + id; }
   // A museum you have already placed on the map gives its position to new works there, so nobody has to look it up again.
   function museumPin(name) {
     var key = norm(name).toLowerCase();
@@ -6798,6 +6799,47 @@ var WORLD_WATER = [
     return null;
   }
 
+  /* ---------- on-device photo storage (website only) ---------- */
+  function openPhotoDb() {
+    return new Promise(function (res, rej) {
+      var r = indexedDB.open('gallery-ledger-photos', 1);
+      r.onupgradeneeded = function () { r.result.createObjectStore('photos'); };
+      r.onsuccess = function () { res(r.result); };
+      r.onerror = function () { rej(r.error); };
+    });
+  }
+  async function localPhotoStore() {
+    try {
+      if (!window.indexedDB || !('serviceWorker' in navigator)) return null;
+      await navigator.serviceWorker.register('sw.js');
+      await navigator.serviceWorker.ready;
+      if (!navigator.serviceWorker.controller) {
+        await new Promise(function (res) {
+          var t = setTimeout(res, 4000);
+          navigator.serviceWorker.addEventListener('controllerchange', function () { clearTimeout(t); res(); });
+        });
+      }
+      if (!navigator.serviceWorker.controller) return null;
+      var db = await openPhotoDb();
+      try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch (e) { /* optional */ }
+      function tx(mode, fn) {
+        return new Promise(function (res, rej) {
+          var t = db.transaction('photos', mode), out = fn(t.objectStore('photos'));
+          t.oncomplete = function () { res(out); };
+          t.onerror = t.onabort = function () { rej(t.error); };
+        });
+      }
+      return {
+        upload: async function (blob) {
+          var id = 'p' + Date.now().toString(36) + Math.random().toString(36).slice(2, 10);
+          await tx('readwrite', function (st) { st.put(blob, id); });
+          return { id: id, url: photoBase + id, sizeBytes: blob.size, contentType: blob.type };
+        },
+        delete: async function (id) { await tx('readwrite', function (st) { st.delete(id); }); }
+      };
+    } catch (e) { return null; }
+  }
+
   /* ---------- start ---------- */
   async function init() {
     render();
@@ -6842,6 +6884,11 @@ var WORLD_WATER = [
 
     var a = await hostService('assets', function (x) { return typeof x.upload === 'function'; });
     if (a) { assets = a; render(); loadPending(); }
+    else {
+      /* On the website: photos live in this device's own storage (IndexedDB), served to <img> by sw.js. */
+      var local = await localPhotoStore();
+      if (local) { photoBase = '_blob/'; assets = local; render(); loadPending(); }
+    }
   }
   init();
 })();
