@@ -919,6 +919,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 @media (prefers-reduced-motion: reduce) { .draftitem.pending .pbadge { animation: none; } }
 .qnote { font-size: 14px; color: var(--muted); min-height: 1.4em; }
 .planbtn { display: inline-flex; align-items: center; gap: 8px; margin: 12px 0 2px; padding: 9px 16px 9px 13px; border: 1.5px solid var(--accent); border-radius: 999px; background: color-mix(in srgb, var(--accent) 8%, transparent); }
+.planbtn + .planbtn { margin-left: 8px; }
 .planbtn:hover { text-decoration: none; background: color-mix(in srgb, var(--accent) 16%, transparent); }
 .planbtn svg { width: 18px; height: 18px; flex: none; }
 .plan-head { min-width: 0; }
@@ -1292,6 +1293,23 @@ body .viewopts { display: none !important; }
 
 body.is-empty #stats { display: none; }
 
+/* Browse a museum's notable works (prefix br-) */
+#brOverlay .sheet { max-width: none; max-height: none; height: 100%; border-radius: 0; padding: 0 max(18px, env(safe-area-inset-left, 0px)) calc(28px + env(safe-area-inset-bottom, 0px)); gap: 0; background: var(--bg); align-content: start; overflow-y: auto; }
+.br-head { position: relative; padding: 70px 0 14px; }
+.br-back { position: absolute; top: 14px; left: -6px; display: inline-flex; align-items: center; gap: 2px; height: 38px; padding: 0 14px 0 8px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); font: inherit; font-size: 15px; color: var(--ink); cursor: pointer; }
+.br-head h2 { margin: 2px 0 4px; font-family: var(--font-display); font-weight: 400; font-size: 32px; }
+.br-search { width: 100%; box-sizing: border-box; height: 44px; margin-top: 14px; padding: 0 14px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); font: inherit; font-size: 16px; color: var(--ink); }
+.br-list { list-style: none; margin: 6px 0 0; padding: 0; display: grid; }
+.br-row { display: grid; grid-template-columns: 64px 1fr auto; gap: 12px; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--line); }
+.br-img { width: 64px; height: 64px; border-radius: 8px; object-fit: cover; background: var(--surface-2); display: block; }
+.br-img.none { display: grid; place-items: center; color: var(--muted); font-size: 11px; }
+.br-t { min-width: 0; }
+.br-t strong { display: block; font-family: var(--font-display); font-weight: 500; font-size: 17px; line-height: 1.25; }
+.br-t span { display: block; margin-top: 2px; color: var(--muted); font-size: 13px; }
+.br-add { height: 34px; padding: 0 14px; border-radius: 999px; border: 1.5px solid var(--accent); background: none; color: var(--accent); font: 600 13px/1 var(--font-body); cursor: pointer; white-space: nowrap; }
+.br-add:disabled { border-color: var(--line); color: var(--muted); cursor: default; }
+.br-note { margin: 16px 0 0; text-align: center; }
+.br-more { margin: 14px auto 0; display: block; }
 /* Visit plan: a full page with a photo header, in the same quiet style as the rest of the app. */
 #planOverlay.planpage { padding: 0; align-items: stretch; background: var(--bg); }
 #planOverlay .sheet { max-width: none; max-height: none; height: 100%; border-radius: 0; padding: 0 0 calc(24px + env(safe-area-inset-bottom, 0px)); gap: 0; background: var(--bg); align-content: start; }
@@ -1699,7 +1717,7 @@ body.plan-open .addpop { z-index: 26; bottom: calc(env(safe-area-inset-bottom, 0
         <button type="button" class="btn" id="copyBackup">Copy</button>
       </div>
     </section>
-    <p class="buildline" id="buildLine">Version 2026-11-27 23:45</p>
+    <p class="buildline" id="buildLine">Version 2026-11-28 00:20</p>
       </div>
 </div>
 
@@ -1729,6 +1747,21 @@ body.plan-open .addpop { z-index: 26; bottom: calc(env(safe-area-inset-bottom, 0
       <div class="plan-added" id="planAdded" hidden></div>
       <p class="qnote" id="planNote"></p>
     </div>
+  </div>
+</div>
+
+<div class="overlay planpage" id="brOverlay" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="brTitle">
+    <header class="br-head">
+      <button type="button" class="br-back" id="brDone" aria-label="Back"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>Back</button>
+      <p class="country" id="brCountry"></p>
+      <h2 id="brTitle"></h2>
+      <p class="meta">Notable works, from Wikidata</p>
+      <input type="search" id="brSearch" class="br-search" placeholder="Search by title or artist" autocomplete="off" autocorrect="off" spellcheck="false" aria-label="Search this museum">
+    </header>
+    <ul class="br-list" id="brList"></ul>
+    <p class="qnote br-note" id="brNote" role="status"></p>
+    <button type="button" class="btn br-more" id="brMore" hidden>Show more</button>
   </div>
 </div>
 
@@ -2079,7 +2112,7 @@ var WORLD_WATER = [
      whenever the code shows or hides it, so no call site needs its own animation. A NEW overlay, sheet or viewer must be added
      to SOFT_LAYERS (and get its fade from the .overlay / .viewer rules in the CSS). Reading .hidden answers at once; only the
      real hiding waits for the fade (150 ms; keep it equal to the closing time in the CSS motion standard). */
-  var SOFT_LAYERS = ['moreOverlay', 'planOverlay', 'overlay', 'tlSheet', 'medSheet', 'mvSheet', 'moreMenu', 'photosSheet', 'needSheet', 'delSheet', 'viewer', 'cropper'];
+  var SOFT_LAYERS = ['moreOverlay', 'planOverlay', 'brOverlay', 'overlay', 'tlSheet', 'medSheet', 'mvSheet', 'moreMenu', 'photosSheet', 'needSheet', 'delSheet', 'viewer', 'cropper'];
   (function () {
     var real = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'hidden');
     SOFT_LAYERS.forEach(function (id) {
@@ -3285,6 +3318,12 @@ var WORLD_WATER = [
     b.append('Plan a visit');
     return b;
   }
+  function browseButton(g) {
+    var b = el('button', { type: 'button', class: 'link planbtn', onclick: function () { openBrowse(g); } });
+    b.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg>';
+    b.append('Notable works');
+    return b;
+  }
   function cardHead(key, headKids, listEl) {
     var isOpen = !!ui.open[key];
     var head = el('button', { type: 'button', class: 'ghead', 'aria-expanded': String(isOpen) }, headKids,
@@ -3342,6 +3381,7 @@ var WORLD_WATER = [
           el('h3', { text: g.museum || 'Museum not set' }),
           el('p', { class: 'meta', text: [count, g.city].filter(Boolean).join(' \u00b7 ') })], ul),
         g.museum && g.items.some(function (i) { return i.status === 'want'; }) ? planButton(g) : null,
+        g.museum ? browseButton(g) : null,
         ui.thumbs ? strip : null,
         ul));
     };
@@ -4439,6 +4479,136 @@ var WORLD_WATER = [
   }
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !$('tourPage').hidden) closeTour(); });
   document.addEventListener('DOMContentLoaded', function () { var b = $('tourBtn'); if (b) b.addEventListener('click', openTour); var sk = $('tourSkip'); if (sk) sk.addEventListener('click', closeTour); });
+
+  /* ----- browse a museum's notable works, from Wikidata ----- */
+  var br = { g: null, qid: '', term: '', offset: 0, busy: false, token: 0, timer: 0 };
+  var BR_PAGE = 40;
+  async function brMuseumQid(g) {
+    var cache = {};
+    try { cache = JSON.parse(localStorage.getItem('gallery-ledger-museum-q') || '{}'); } catch (e) { /* no cache */ }
+    var ck = norm(g.museum).toLowerCase();
+    if (cache[ck]) return cache[ck];
+    var found = await wdGet({ action: 'wbsearchentities', search: g.museum, language: 'en', uselang: 'en', type: 'item', limit: '8' });
+    var ids = (found.search || []).map(function (x) { return x.id; });
+    if (!ids.length) return '';
+    var ents = await wdEntities(ids);
+    var want = wdFold(g.museum), pick = '';
+    ids.forEach(function (id) {
+      var e = ents[id];
+      if (!e || pick) return;
+      var named = wdFold(wdLabel(e)) === want;
+      var placeLike = wdClaims(e, 'P625').length || wdIds(e, 'P17').length;
+      if (placeLike && named) pick = id;
+    });
+    ids.forEach(function (id) { var e = ents[id]; if (e && !pick && wdClaims(e, 'P625').length) pick = id; });
+    if (pick) { cache[ck] = pick; try { localStorage.setItem('gallery-ledger-museum-q', JSON.stringify(cache)); } catch (e) { /* fine */ } }
+    return pick;
+  }
+  async function brQuery(qid, term, offset) {
+    var f = '';
+    if (term) {
+      var t = term.toLowerCase().replace(/[\\"]/g, ' ').trim();
+      f = 'FILTER(CONTAINS(LCASE(STR(?wLabel)), "' + t + '") || CONTAINS(LCASE(STR(?aLabel)), "' + t + '"))';
+    }
+    var q = 'SELECT ?w ?wLabel ?aLabel ?year ?img ?links WHERE { ?w wdt:P195 wd:' + qid + '; wdt:P31 wd:Q3305213; wikibase:sitelinks ?links. ' +
+      'OPTIONAL { ?w wdt:P170 ?a. } OPTIONAL { ?w wdt:P571 ?inc. BIND(YEAR(?inc) AS ?year) } OPTIONAL { ?w wdt:P18 ?img. } ' +
+      'SERVICE wikibase:label { bd:serviceParam wikibase:language "en". ?w rdfs:label ?wLabel. ?a rdfs:label ?aLabel. } ' + f + ' } ORDER BY DESC(?links) LIMIT ' + BR_PAGE + ' OFFSET ' + offset;
+    var r = await withTimeout(fetch('https://query.wikidata.org/sparql?format=json&query=' + encodeURIComponent(q)), 25000);
+    if (!r.ok) throw new Error('sparql ' + r.status);
+    var j = await r.json();
+    var seen = {}, out = [];
+    ((j.results && j.results.bindings) || []).forEach(function (b) {
+      var id = b.w && b.w.value;
+      if (!id || seen[id]) return;
+      seen[id] = true;
+      var title = b.wLabel && b.wLabel.value;
+      if (!title || /^Q\d+$/.test(title)) return;
+      out.push({ id: id, title: title, artist: b.aLabel && !/^Q\d+$/.test(b.aLabel.value) ? b.aLabel.value : '', year: b.year ? b.year.value : '', img: b.img ? b.img.value : '' });
+    });
+    return out;
+  }
+  function brInLedger(w) {
+    var t = wdFold(w.title), a = wdFold(w.artist);
+    return allItems.some(function (i) { return wdFold(i.title) === t && (!a || !i.artist || wdFold(i.artist) === a); });
+  }
+  function brThumb(url) {
+    if (!/^https?:\/\/commons\.wikimedia\.org\//.test(url)) return '';
+    return url.replace(/^http:/, 'https:') + (url.indexOf('?') < 0 ? '?width=240' : '');
+  }
+  function brRow(w) {
+    var img = brThumb(w.img);
+    var pic = img ? el('img', { class: 'br-img', src: img, alt: '', loading: 'lazy' }) : el('div', { class: 'br-img none', text: 'No photo' });
+    if (img) pic.addEventListener('error', function () { pic.replaceWith(el('div', { class: 'br-img none', text: 'No photo' })); });
+    var btn = el('button', { type: 'button', class: 'br-add', text: brInLedger(w) ? 'In your ledger' : 'Add' });
+    if (btn.textContent !== 'Add') btn.disabled = true;
+    btn.addEventListener('click', function () { brAdd(w, btn); });
+    return el('li', { class: 'br-row' }, pic, el('div', { class: 'br-t' }, el('strong', { text: w.title }), el('span', { text: [w.artist, w.year].filter(Boolean).join(' \u00b7 ') })), btn);
+  }
+  async function brAdd(w, btn) {
+    btn.disabled = true; btn.textContent = 'Adding\u2026';
+    var g = br.g, same = allItems.filter(function (i) { return norm(i.museum).toLowerCase() === norm(g.museum).toLowerCase() && typeof i.lat === 'number'; })[0];
+    var rec = { id: newId(), no: nextNo(), createdAt: Date.now(), title: w.title.slice(0, 200), artist: w.artist.slice(0, 120), year: w.year, medium: '', movements: [], status: 'want', dateSeen: '',
+      museum: g.museum, city: g.city || '', country: g.country || '', notes: '' };
+    if (same) { rec.lat = same.lat; rec.lng = same.lng; }
+    try {
+      var d = await wikiLookup(w.title, w.artist);
+      if (d) {
+        if (d.medium) rec.medium = d.medium;
+        if (Array.isArray(d.movements)) rec.movements = d.movements.slice(0, 3);
+        if (d.year && !rec.year) rec.year = d.year;
+        if (d.about && /^https:\/\/[a-z.]*wikipedia\.org\//.test(String(d.aboutUrl || ''))) { rec.about = norm(d.about).slice(0, 600); rec.aboutUrl = String(d.aboutUrl).slice(0, 300); }
+        if (!rec.city && d.city) rec.city = d.city;
+        if (!rec.country && d.country) rec.country = d.country;
+        if (typeof rec.lat !== 'number' && d.lat != null && d.lng != null) { rec.lat = d.lat; rec.lng = d.lng; }
+      }
+    } catch (e) { /* the basics are enough */ }
+    try { await saveItem(rec); btn.textContent = 'Added \u2713'; toast('Added to To see'); }
+    catch (e) { btn.disabled = false; btn.textContent = 'Add'; toast('Could not save. You may have view-only access.'); }
+  }
+  async function brLoad(reset) {
+    if (br.busy && !reset) return;
+    var my = ++br.token;
+    br.busy = true;
+    var list = $('brList'), note = $('brNote'), more = $('brMore');
+    if (reset) { list.replaceChildren(); br.offset = 0; }
+    more.hidden = true;
+    note.textContent = reset ? 'Looking\u2026' : 'Loading more\u2026';
+    try {
+      if (!br.qid) br.qid = await brMuseumQid(br.g);
+      if (my !== br.token) return;
+      if (!br.qid) { note.textContent = 'Wikidata doesn\u2019t know this museum by that name.'; br.busy = false; return; }
+      var rows = await brQuery(br.qid, br.term, br.offset);
+      if (my !== br.token) return;
+      rows.forEach(function (w) { list.append(brRow(w)); });
+      br.offset += BR_PAGE;
+      note.textContent = list.children.length ? '' : (br.term ? 'Nothing matched. Try another word.' : 'No notable works listed for this museum yet.');
+      more.hidden = rows.length < BR_PAGE;
+    } catch (e) {
+      if (my === br.token) note.textContent = 'Couldn\u2019t reach Wikidata. Check your connection and try again.';
+    } finally { if (my === br.token) br.busy = false; }
+  }
+  function openBrowse(g) {
+    br = { g: g, qid: '', term: '', offset: 0, busy: false, token: br.token, timer: 0 };
+    $('brCountry').textContent = g.country || '';
+    $('brTitle').textContent = g.museum;
+    $('brSearch').value = '';
+    $('brOverlay').hidden = false;
+    document.body.style.overflow = 'hidden';
+    brLoad(true);
+  }
+  function closeBrowse() {
+    br.token++;
+    $('brOverlay').hidden = true;
+    if ($('overlay').hidden && $('planOverlay').hidden) document.body.style.overflow = '';
+  }
+  document.addEventListener('DOMContentLoaded', function () {
+    $('brDone').addEventListener('click', closeBrowse);
+    $('brMore').addEventListener('click', function () { brLoad(false); });
+    $('brSearch').addEventListener('input', function () {
+      clearTimeout(br.timer);
+      br.timer = setTimeout(function () { br.term = norm($('brSearch').value); br.busy = false; brLoad(true); }, 450);
+    });
+  });
 
   /* ----- visit plan: the works still to see at one museum ----- */
   var plan = { key: null, complete: null, done: {}, start: 0, museum: '', city: '', country: '' };
