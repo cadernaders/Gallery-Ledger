@@ -34,7 +34,7 @@ self.addEventListener('fetch', function (e) {
     return;
   }
   /* the app itself: newest copy when online, last copy when offline */
-  e.respondWith(fetch(req).then(function (r) {
+  e.respondWith(fetch(req, { cache: 'no-cache' }).then(function (r) {
     var copy = r.clone();
     caches.open(APP_CACHE).then(function (c) { c.put(req, copy); });
     return r;
