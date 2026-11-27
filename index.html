@@ -1595,7 +1595,7 @@ body.plan-open .addpop { z-index: 26; bottom: calc(env(safe-area-inset-bottom, 0
         <button type="button" class="btn" id="copyBackup">Copy</button>
       </div>
     </section>
-    <p class="buildline" id="buildLine">Version 2026-11-27 14:10</p>
+    <p class="buildline" id="buildLine">Version 2026-11-27 14:30</p>
       </div>
 </div>
 
@@ -5063,11 +5063,13 @@ var WORLD_WATER = [
     if ($('autofillRow').dataset.lf === String(labelFirst)) return;
     $('autofillRow').dataset.lf = String(labelFirst);
     var box = document.querySelector('.wp-sugbtns');
-    $('placardBtn').className = labelFirst ? 'btn primary' : 'btn';
-    $('autofillBtn').className = labelFirst ? 'btn' : 'btn primary';
+    var wk = !!(sampleFn && sampleFn.wiki);
+    $('placardBtn').className = labelFirst && !wk ? 'btn primary' : 'btn';
+    $('autofillBtn').className = labelFirst && !wk ? 'btn' : 'btn primary';
     box.insertBefore($('placardBtn'), box.firstChild);
     $('autofillRow').querySelector('small').textContent = labelFirst ? 'Add details' : 'Suggestions';
-    $('autofillNote').textContent = labelFirst ? 'Take a photo of the museum label, or let Claude work it out from the artwork.' : 'Fills the empty fields from the photo, or from a photo of the museum label.';
+    $('autofillNote').textContent = sampleFn && sampleFn.wiki ? 'Type the title (and the artist), then fill in the rest from Wikidata.' :
+      labelFirst ? 'Take a photo of the museum label, or let Claude work it out from the artwork.' : 'Fills the empty fields from the photo, or from a photo of the museum label.';
   }
 
   var wizStep = null; // the step-by-step version is gone; this stays null so older code paths stay quiet
