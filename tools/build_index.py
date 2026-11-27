@@ -11,7 +11,7 @@ import requests
 from PIL import Image
 import numpy as np
 
-MIN_LINKS = int(os.environ.get("MIN_LINKS", "8"))      # how widely a work is covered on Wikipedia
+MIN_LINKS = int(os.environ.get("MIN_LINKS", "5"))      # how widely a work is covered on Wikipedia
 MAX_WORKS = int(os.environ.get("MAX_WORKS", "12000"))
 UA = {"User-Agent": "GalleryLedgerIndexBuilder/1.0 (https://github.com/cadernaders/Gallery-Ledger)"}
 SPARQL = "https://query.wikidata.org/sparql"
@@ -80,7 +80,8 @@ def main():
             return
         with torch.no_grad():
             inp = proc(images=batch_i, return_tensors="pt")
-            f = model.get_image_features(**inp)
+            vo = model.vision_model(pixel_values=inp["pixel_values"])
+            f = model.visual_projection(vo.pooler_output)
             f = torch.nn.functional.normalize(f, dim=-1).numpy()
         for w, v in zip(batch_w, f):
             kept.append(w)
