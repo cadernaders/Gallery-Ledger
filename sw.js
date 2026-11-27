@@ -1,7 +1,10 @@
 /* Gallery Ledger service worker: serves photos from on-device storage, and keeps the app available offline. */
 var APP_CACHE = 'gl-app-v1';
+var SHELL = ['./', 'index.html', 'manifest.webmanifest', 'icon-192.png', 'apple-touch-icon.png'];
 
-self.addEventListener('install', function () { self.skipWaiting(); });
+self.addEventListener('install', function (e) {
+  e.waitUntil(caches.open(APP_CACHE).then(function (c) { return c.addAll(SHELL); }).then(function () { return self.skipWaiting(); }));
+});
 self.addEventListener('activate', function (e) { e.waitUntil(self.clients.claim()); });
 
 function readPhoto(id) {
