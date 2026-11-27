@@ -1684,7 +1684,7 @@ body.plan-open .addpop { z-index: 26; bottom: calc(env(safe-area-inset-bottom, 0
         <button type="button" class="btn" id="copyBackup">Copy</button>
       </div>
     </section>
-    <p class="buildline" id="buildLine">Version 2026-11-27 16:40</p>
+    <p class="buildline" id="buildLine">Version 2026-11-27 17:10</p>
       </div>
 </div>
 
@@ -4245,10 +4245,10 @@ var WORLD_WATER = [
     } catch (e) { toast('Could not add the examples.'); }
   }
   var TOUR = [
-    ['Gallery', 'Your collection as photos, or as a list. The button at the bottom right switches between them.'],
+    ['Gallery', 'All your works as photos, or as a list. The button in the bottom right switches between the two.'],
     ['Timeline', 'Your works in the order they were made, with the art movements alongside.'],
-    ['Artists', 'Everything grouped by who made it.'],
-    ['Museums', 'What\u2019s kept where, listed or pinned on a world map.']
+    ['Artists', 'Your works grouped by artist.'],
+    ['Museums', 'Where each work is kept, as a list or pinned on a world map.']
   ];
   function welcomeView() {
     return el('div', { class: 'welcome' },
@@ -4314,33 +4314,33 @@ var WORLD_WATER = [
     }
   };
   var TOUR_PAGES = [
-    { scene: 'welcome', h: 'Welcome to Gallery Ledger', lead: 'A tool for gallery-goers, to keep track of all the art that inspires them.', body: function () {
+    { scene: 'welcome', h: 'Welcome to Gallery Ledger', lead: 'A simple place for gallery goers to keep track of all the art that inspires them.', body: function () {
       return el('ul', { class: 'tpoints' }, [
-        ['Photograph what moves you', 'Every work with its picture, so you can spot it at a glance.'],
-        ['Add the details at your own pace', 'Artist, year, medium, art movement and where it is kept.'],
-        ['Look back on it your way', 'Browse by artist, museum, timeline or map.']
+        ['Take a photo of what you love', 'Every work gets its picture, so you can spot it again at a glance.'],
+        ['Add the details whenever you like', 'Artist, year, medium, art movement, and where you saw it.'],
+        ['Look back on it your way', 'Browse by artist, museum, timeline, or map.']
       ].map(function (t) { return el('li', null, el('strong', { text: t[0] }), el('span', { text: t[1] })); }));
     } },
-    { scene: 'snap', h: 'Snap as you wander', lead: 'Tap + and take a photo. No typing, no stopping.', body: function () {
+    { scene: 'snap', h: 'Snap photos as you wander', lead: 'Tap + and take a picture. That\u2019s all you need to do while you\u2019re in the museum.', body: function () {
       return tourSteps([
-        ['One photo per work', 'Take it, or choose photos you already have.'],
-        ['They wait in Drafts', 'The round button at the bottom left counts them. Keep walking and sort them out later.']
+        ['One photo per work', 'Take a new one, or pick some you already have.'],
+        ['They wait in Drafts', 'The round button in the bottom left keeps count. Sort them out later, when you\u2019re home.']
       ]);
     } },
-    { scene: 'drafts', h: 'Drafts make cataloguing easy', lead: 'Sit down with your photos when you are ready and go through them one by one.', body: function () {
+    { scene: 'drafts', h: 'Drafts keep you organized', lead: 'Think of Drafts as your pile of photos to catalogue. Go through them whenever you feel like it.', body: function () {
       return el('div', { class: 'tbody' }, tourSteps([
-        ['Open a draft', 'Crop the photo, or delete a shot you do not need, right on the page.'],
-        ['Add what you know', 'Or let Autofill suggest it for you.'],
-        ['Add to gallery', 'The Drafts list comes back, so you can pick up the next one.']
-      ]), el('p', { class: 'ts-note', text: 'Prefer to add works straight to your gallery? Turn off “Save new photos to Drafts” in the ⋯ menu.' }));
+        ['Open a draft', 'Crop the photo, or delete it if it didn\u2019t turn out.'],
+        ['Add what you know', 'Or tap Autofill and let it fill things in for you.'],
+        ['Tap Add to gallery', 'It moves into your gallery, and your Drafts list comes back, ready for the next one.']
+      ]), el('p', { class: 'ts-note', text: 'Want your photos to skip Drafts and go straight to your gallery? Switch off \u201cSave new photos to Drafts\u201d in the \u22ef menu.' }));
     } },
-    { scene: 'autofill', h: 'Let Autofill do the typing', lead: 'Enter a title and an artist, then tap Autofill details.', body: function () {
+    { scene: 'autofill', h: 'Let Autofill do the typing', lead: 'Type the title and the artist, then tap Autofill details.', body: function () {
       return el('div', { class: 'tbody' }, tourSteps([
-        ['It looks the work up', 'On Wikidata, a free public encyclopedia of facts.'],
-        ['It fills the empty fields', 'Year, medium, museum, city and art movement. It never overwrites what you typed.']
-      ]), el('p', { class: 'ts-note', text: 'It works best for well-known works. Always glance over what it suggests.' }));
+        ['It looks the work up', 'It searches Wikidata, a free online encyclopedia of facts.'],
+        ['It fills in what\u2019s missing', 'Year, medium, museum, city and art movement. It never changes anything you typed yourself.']
+      ]), el('p', { class: 'ts-note', text: 'It works best on well-known works, so take a quick look at what it fills in.' }));
     } },
-    { scene: 'ways', h: 'Four ways to look', lead: 'Switch between them with the tabs along the bottom.', body: function () {
+    { scene: 'ways', h: 'Four ways to look', lead: 'Use the tabs along the bottom to switch between them.', body: function () {
       return el('ol', { class: 'tour' }, TOUR.map(function (t) {
         var tid = t[0].toLowerCase();
         var icon = null;
@@ -4348,24 +4348,24 @@ var WORLD_WATER = [
         return el('li', null, el('strong', null, icon, t[0]), el('span', { text: t[1] }));
       }));
     } },
-    { scene: 'plan', h: 'Plan a visit', lead: 'Heading to a museum? Bring the works you want to see as a checklist.', body: function () {
+    { scene: 'plan', h: 'Plan a museum visit', lead: 'Going to a museum soon? Bring along the works you want to see, as a checklist.', body: function () {
       return tourSteps([
-        ['Save what you hope to see', 'Add each work as To see, with the museum filled in.'],
-        ['Open the museum’s plan', 'In Museums, tap Plan a visit under the museum.'],
-        ['Tick things off as you go', 'And snap any surprises with +.']
+        ['Save the works you want to see', 'Add each one as To see, with the museum filled in.'],
+        ['Open the museum\u2019s plan', 'Go to Museums and tap Plan a visit under the museum.'],
+        ['Tick them off as you go', 'Spot something new? Snap it with +.']
       ]);
     } },
-    { scene: 'safe', h: 'Keep it safe', lead: 'Your works and photos live on this phone, so make a copy now and then.', body: function () {
+    { scene: 'safe', h: 'Keep your collection safe', lead: 'Everything is stored on this phone, so it\u2019s a good idea to save a copy once in a while.', body: function () {
       var steps = [
-        ['Export a backup', 'Tap ⋯, then Export backup, and choose Save to Files.'],
-        ['Keep it in iCloud Drive', 'Or email it to yourself.'],
-        ['Restore any time', 'In the same menu, tap Import backup.']
+        ['Make a backup', 'Tap \u22ef, then Export backup, and choose Save to Files.'],
+        ['Keep it somewhere safe', 'iCloud Drive works well, or email it to yourself.'],
+        ['Bring it back any time', 'Tap \u22ef, then Import backup, and pick the file.']
       ];
       var standalone = false;
       try { standalone = !!window.navigator.standalone || (window.matchMedia && matchMedia('(display-mode: standalone)').matches); } catch (e) { /* show the tip */ }
-      return el('div', { class: 'tbody' }, tourSteps(steps), standalone ? null : el('p', { class: 'ts-note', text: 'Tip: in Safari, tap Share, then Add to Home Screen, to open Gallery Ledger like an app.' }));
+      return el('div', { class: 'tbody' }, tourSteps(steps), standalone ? null : el('p', { class: 'ts-note', text: 'Tip: in Safari, tap Share, then Add to Home Screen, and Gallery Ledger will open like a regular app.' }));
     } },
-    { scene: 'ready', h: 'You are all set', lead: 'Start with a photo, or look around with three examples first.', body: function () {
+    { scene: 'ready', h: 'You\u2019re all set', lead: function () { return allItems.length ? 'Tap + whenever you find something you love.' : 'Take your first photo, or try three examples to get a feel for it.'; }, body: function () {
       return allItems.length ? null : el('button', { type: 'button', class: 'btn', onclick: function () { closeTour(); addSamples(); } }, 'Try three examples');
     } }
   ];
@@ -4392,7 +4392,8 @@ var WORLD_WATER = [
     var pg = TOUR_PAGES[tourStep], last = tourStep === TOUR_PAGES.length - 1;
     var body = $('tourBody');
     body.className = 'tour-body' + (tourDir ? ' ' + tourDir : '');
-    body.replaceChildren(TOUR_SCENES[pg.scene](), el('h2', { id: 'tourH', text: pg.h }), el('p', { class: 'tlead', text: pg.lead }), pg.body());
+    var lead = typeof pg.lead === 'function' ? pg.lead() : pg.lead, extra = pg.body();
+    body.replaceChildren.apply(body, [TOUR_SCENES[pg.scene](), el('h2', { id: 'tourH', text: pg.h }), el('p', { class: 'tlead', text: lead })].concat(extra ? [extra] : []));
     $('tourPage').querySelector('.tour-in').scrollTop = 0;
     var dots = $('tourDots');
     dots.replaceChildren();
