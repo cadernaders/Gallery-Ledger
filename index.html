@@ -10,6 +10,8 @@
 body { margin: 0; font: 14px system-ui, -apple-system, "Segoe UI", sans-serif; }
 img { max-width: 100%; }
 [hidden] { display: none !important; }
+/* File inputs stay invisible but are placed near the bottom centre, so iPhone opens its photo menu there instead of in a random spot. */
+.fileghost { position: fixed; left: 50%; bottom: calc(96px + env(safe-area-inset-bottom, 0px)); width: 1px; height: 1px; opacity: 0; pointer-events: none; }
 </style>
 <title>Gallery Ledger</title>
 <link rel="manifest" href="manifest.webmanifest">
@@ -739,6 +741,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .tl-body { gap: 10px; }
 .tl-body > .pill.tap { width: 80px; font-size: 12px; }
 .tl-body .mt { font-size: 17px; }
+.tl-body .mt { padding-bottom: .16em; margin-bottom: -.16em; } /* room for the descenders (g, y) so the clipped title does not cut them */
 .tl-body .mt { display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: break-word; }
 .tl-body .ma { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .tl-body:not(.open) > .mrowbody { padding-top: 0; }
@@ -1618,8 +1621,8 @@ body.plan-open .addpop { z-index: 26; bottom: calc(env(safe-area-inset-bottom, 0
   </div>
 </div>
 
-<input type="file" id="qInput" accept="image/*" capture="environment" hidden>
-<input type="file" id="qLib" accept="image/*" multiple hidden>
+<input type="file" id="qInput" accept="image/*" capture="environment" class="fileghost" tabindex="-1" aria-hidden="true">
+<input type="file" id="qLib" accept="image/*" multiple class="fileghost" tabindex="-1" aria-hidden="true">
 
 <div class="overlay workpage-wrap" id="overlay" hidden>
   <form class="sheet workpage" id="form" role="dialog" aria-modal="true" aria-labelledby="sheetTitle" autocomplete="off" novalidate>
@@ -1645,7 +1648,7 @@ body.plan-open .addpop { z-index: 26; bottom: calc(env(safe-area-inset-bottom, 0
         <button type="button" class="btn" id="photoRemoveBtn" hidden>Remove photo</button>
         <span class="note" id="photoNote"></span>
       </div>
-      <input type="file" id="photoInput" accept="image/*" multiple hidden>
+      <input type="file" id="photoInput" accept="image/*" multiple class="fileghost" tabindex="-1" aria-hidden="true">
     </div>
 
     <div class="wp-meta">
@@ -1813,7 +1816,7 @@ body.plan-open .addpop { z-index: 26; bottom: calc(env(safe-area-inset-bottom, 0
         <button type="button" class="btn primary" id="autofillBtn">Autofill details</button>
         <button type="button" class="btn" id="placardBtn">Scan placard</button>
       </div>
-      <input type="file" id="placardInput" accept="image/*" capture="environment" hidden>
+      <input type="file" id="placardInput" accept="image/*" capture="environment" class="fileghost" tabindex="-1" aria-hidden="true">
     </div>
     </div>
     <div class="mvs-foot"><button type="button" class="btn primary wp-done" id="needDone">Done</button></div>
@@ -1881,7 +1884,7 @@ body.plan-open .addpop { z-index: 26; bottom: calc(env(safe-area-inset-bottom, 0
 <div class="placardbar" id="placardBar" role="status" hidden>
   <p>Photo saved. Got the museum label? Snap it and I'll fill in the details.</p>
   <div class="placardbtns"><button type="button" class="btn primary" id="placardGo">Scan placard</button><button type="button" class="btn" id="placardNo">Not now</button></div>
-  <input type="file" id="placardCam" accept="image/*" capture="environment" hidden>
+  <input type="file" id="placardCam" accept="image/*" capture="environment" class="fileghost" tabindex="-1" aria-hidden="true">
 </div>
 <div class="toast" id="toast" role="status" hidden></div>
 
