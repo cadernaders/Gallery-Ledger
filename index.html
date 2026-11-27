@@ -1594,7 +1594,7 @@ body.plan-open .addpop { z-index: 26; bottom: calc(env(safe-area-inset-bottom, 0
         <button type="button" class="btn" id="copyBackup">Copy</button>
       </div>
     </section>
-    <p class="buildline" id="buildLine">Version 2026-11-27 11:25</p>
+    <p class="buildline" id="buildLine">Version 2026-11-27 11:40</p>
       </div>
 </div>
 
@@ -6894,7 +6894,7 @@ var WORLD_WATER = [
       inp.classList.add('fileghost'); inp.style.cssText = ''; inp.removeAttribute('title'); return;
     }
     inp.classList.remove('fileghost');
-    inp.style.cssText = 'position:fixed;z-index:16;opacity:0.01;cursor:pointer;left:' + r.left + 'px;top:' + r.top + 'px;width:' + r.width + 'px;height:' + r.height + 'px;';
+    inp.style.cssText = 'position:fixed;z-index:16;opacity:0.01;cursor:pointer;left:' + r.left + 'px;top:' + (r.top - 70) + 'px;width:' + r.width + 'px;height:' + (r.height + 70) + 'px;';
     inp.setAttribute('title', 'Add a photo');
   }
   window.addEventListener('resize', placeQuickInput);
