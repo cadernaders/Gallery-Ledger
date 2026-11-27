@@ -1567,6 +1567,7 @@ body.plan-open .addpop { z-index: 26; bottom: calc(env(safe-area-inset-bottom, 0
     </div>
     <label class="morerow switchrow" id="placardOfferRow" hidden><span>Offer to scan the museum label after a photo</span><input type="checkbox" id="placardOffer"></label>
     <label class="morerow switchrow" id="draftsRow"><span>Save new photos to Drafts<small>Turn off to add photos straight to your gallery.</small></span><input type="checkbox" id="draftsOnBox"></label>
+    <button type="button" class="morerow" id="noPhotoBtn">Add a work without a photo</button>
     <button type="button" class="morerow" id="tourBtn">Take the quick tour</button>
     <section class="backup" aria-labelledby="backupTitle">
       <h2 id="backupTitle">Backup</h2>
@@ -4349,7 +4350,7 @@ var WORLD_WATER = [
   $('planDone').addEventListener('click', closePlan);
   $('planQuick').addEventListener('click', function () {
     if (!assets) { openSheet(null); return; }
-    popOpen('addMenu', 'planQuick');
+    $('qLib').click();
   });
 
   function renderDrafts() {
@@ -4905,11 +4906,12 @@ var WORLD_WATER = [
 
   $('quickBtn').addEventListener('click', function () {
     if (!assets) { openSheet(null); return; }
-    popOpen('addMenu', 'quickBtn');
+    $('qLib').click(); /* the iPhone's own menu (Photo Library, Take Photo, Choose Files) is the only menu */
   });
   $('amCamera').addEventListener('click', function () { closePops(); $('qInput').click(); });
   $('amLibrary').addEventListener('click', function () { closePops(); $('qLib').click(); });
   $('amManual').addEventListener('click', function () { closePops(); openSheet(null); });
+  $('noPhotoBtn').addEventListener('click', function () { closeMore(); setTimeout(function () { openSheet(null); }, 180); });
   $('draftFab').addEventListener('click', function () { popOpen('draftBar', 'draftFab'); });
 
   var VP_ICONS = {
