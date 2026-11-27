@@ -1594,7 +1594,7 @@ body.plan-open .addpop { z-index: 26; bottom: calc(env(safe-area-inset-bottom, 0
         <button type="button" class="btn" id="copyBackup">Copy</button>
       </div>
     </section>
-    <p class="buildline" id="buildLine">Version 2026-11-27 11:40</p>
+    <p class="buildline" id="buildLine">Version 2026-11-27 11:50</p>
       </div>
 </div>
 
@@ -6886,9 +6886,11 @@ var WORLD_WATER = [
 
   /* The photo chooser is opened by tapping a real file input laid invisibly over the + button, so the iPhone
      anchors its menu to that button instead of guessing a spot. */
+  var OVERLAY_QUICK_INPUT = false; // tried laying the input over the + button: it showed a grey box and did not move the menu
   function placeQuickInput() {
     var inp = $('qLib'), b = $('quickBtn');
     if (!inp || !b || !localPhotos) return;
+    if (!OVERLAY_QUICK_INPUT) { inp.classList.add('fileghost'); inp.style.cssText = ''; return; }
     var r = b.getBoundingClientRect();
     if (!r.width || !r.height || $('tabbar').hidden) {
       inp.classList.add('fileghost'); inp.style.cssText = ''; inp.removeAttribute('title'); return;
