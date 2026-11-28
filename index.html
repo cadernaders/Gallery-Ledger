@@ -298,7 +298,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .favtoggle[aria-pressed="true"] { color: var(--ochre); border-color: var(--ochre); }
 .favtoggle svg { display: block; }
 #favFilter[aria-pressed="true"] svg { fill: currentColor; }
-#viewerFav, #viewerClose { display: inline-flex; align-items: center; justify-content: center; padding: 9px 12px; }
+#viewerFav { display: inline-flex; align-items: center; justify-content: center; padding: 9px 12px; }
 #viewerFav[aria-pressed="true"] { color: #E3BD6A; border-color: #E3BD6A; }
 .filterbtn { position: relative; display: inline-flex; align-items: center; justify-content: center; height: 40px; width: 44px; box-sizing: border-box; padding: 0; font: inherit; font-size: 14px; font-weight: 500; color: var(--muted); background: var(--surface); border: 1px solid var(--line); border-radius: 8px; cursor: pointer; }
 .filterbtn[aria-pressed="true"], .filterbtn[aria-expanded="true"] { color: var(--ink); border-color: var(--accent); }
@@ -627,8 +627,9 @@ button, input, select, textarea { font: inherit; color: inherit; }
 /* Photo viewer */
 .viewer { position: fixed; inset: 0; z-index: 40; display: flex; flex-direction: column; background: var(--viewer-bg); color: var(--viewer-ink); padding-left: env(safe-area-inset-left, 0px); padding-right: env(safe-area-inset-right, 0px); }
 .viewer :focus-visible { outline-color: var(--viewer-ink); }
-.viewer-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: calc(16px + env(safe-area-inset-top, 0px)) 16px 12px; }
-.viewer-cap { min-width: 0; }
+.viewer-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: calc(14px + env(safe-area-inset-top, 0px)) 16px 8px; }
+.viewer-cap { min-width: 0; padding: 0 16px 8px; }
+.vback { display: inline-flex; align-items: center; gap: 2px; height: 38px; padding: 0 14px 0 8px; border-radius: 999px; border: 1px solid var(--viewer-line); background: var(--viewer-chip); color: var(--viewer-ink); font: 600 15px/1 var(--font-body); cursor: pointer; }
 .vtopbtns { display: flex; gap: 8px; flex: none; }
 .viewer-cap h2 { font-family: var(--font-display); font-size: 22px; font-weight: 500; font-style: italic; line-height: 1.15; overflow-wrap: anywhere; }
 .viewer-cap p { font-size: 13px; color: var(--viewer-muted); margin-top: 2px; }
@@ -653,8 +654,8 @@ button, input, select, textarea { font: inherit; color: inherit; }
 @keyframes pinchA { 0% { opacity: 0; transform: translateX(-10px); } 18% { opacity: 1; transform: translateX(-10px); } 70% { opacity: 1; transform: translateX(-58px); } 100% { opacity: 0; transform: translateX(-64px); } }
 @keyframes pinchB { 0% { opacity: 0; transform: translateX(10px); } 18% { opacity: 1; transform: translateX(10px); } 70% { opacity: 1; transform: translateX(58px); } 100% { opacity: 0; transform: translateX(64px); } }
 @media (prefers-reduced-motion: reduce) { .pinch-hint.go { display: none; } }
-.viewer-top, .viewer-bottom { transition: opacity .2s ease, visibility 0s linear 0s; }
-.viewer.bare .viewer-top, .viewer.bare .viewer-bottom { opacity: 0; visibility: hidden; pointer-events: none; transition: opacity .2s ease, visibility 0s linear .2s; }
+.viewer-top, .viewer-bottom, .viewer-cap { transition: opacity .2s ease, visibility 0s linear 0s; }
+.viewer.bare .viewer-top, .viewer.bare .viewer-bottom, .viewer.bare .viewer-cap { opacity: 0; visibility: hidden; pointer-events: none; transition: opacity .2s ease, visibility 0s linear .2s; }
 
 /* Toast */
 .toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(18px + env(safe-area-inset-bottom, 0px)); z-index: 30; max-width: calc(100% - 32px); background: var(--ink); color: var(--bg); padding: 10px 16px; border-radius: 10px; font-size: 14px; font-weight: 500; }
@@ -1302,7 +1303,7 @@ body.is-empty #stats { display: none; }
 /* Browse a museum's notable works (prefix br-) */
 #brOverlay .sheet { max-width: none; max-height: none; height: 100%; border-radius: 0; padding: 0 max(18px, env(safe-area-inset-left, 0px)) calc(28px + env(safe-area-inset-bottom, 0px)); gap: 0; background: var(--bg); align-content: start; overflow-y: auto; }
 .br-head { position: relative; padding: 70px 0 14px; }
-.br-back { position: absolute; top: 14px; left: -6px; display: inline-flex; align-items: center; gap: 2px; height: 38px; padding: 0 14px 0 8px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); font: inherit; font-size: 15px; color: var(--ink); cursor: pointer; }
+.br-back { position: absolute; top: 14px; left: -6px; display: inline-flex; align-items: center; gap: 2px; height: 38px; padding: 0 14px 0 8px; border: 0; border-radius: 999px; background: var(--surface); color: var(--ink); font: inherit; font-size: 15px; font-weight: 600; cursor: pointer; box-shadow: 0 0 0 1px var(--line), 0 1px 4px rgba(0, 0, 0, .08); }
 .br-head h2 { margin: 2px 0 4px; font-family: var(--font-display); font-weight: 400; font-size: 32px; }
 .br-search { width: 100%; box-sizing: border-box; height: 44px; margin-top: 14px; padding: 0 14px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); font: inherit; font-size: 16px; color: var(--ink); }
 .br-list { list-style: none; margin: 6px 0 0; padding: 0; display: grid; }
@@ -1735,7 +1736,7 @@ body.plan-open .addpop { z-index: 26; bottom: calc(env(safe-area-inset-bottom, 0
         <button type="button" class="btn" id="copyBackup">Copy</button>
       </div>
     </section>
-    <p class="buildline" id="buildLine">Version 2026-11-28 02:15</p>
+    <p class="buildline" id="buildLine">Version 2026-11-28 02:40</p>
       </div>
 </div>
 
@@ -2022,15 +2023,15 @@ body.plan-open .addpop { z-index: 26; bottom: calc(env(safe-area-inset-bottom, 0
 
 <div class="viewer" id="viewer" role="dialog" aria-modal="true" aria-labelledby="viewerTitle" hidden>
   <div class="viewer-top">
-    <div class="viewer-cap">
+    <button type="button" class="vback" id="viewerClose" aria-label="Back"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.5 5l-7 7 7 7"/></svg>Back</button>
+    <div class="vtopbtns">
+      <button type="button" class="vbtn" id="viewerFav" aria-pressed="false" aria-label="Favorite" title="Favorite" hidden><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.6l2.6 5.4 5.9.8-4.3 4.1 1.1 5.9L12 17l-5.3 2.8 1.1-5.9L3.5 9.8l5.9-.8z"/></svg></button>
+    </div>
+  </div>
+  <div class="viewer-cap">
       <h2 id="viewerTitle"></h2>
       <p id="viewerSub"></p>
     </div>
-    <div class="vtopbtns">
-      <button type="button" class="vbtn" id="viewerFav" aria-pressed="false" aria-label="Favorite" title="Favorite" hidden><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.6l2.6 5.4 5.9.8-4.3 4.1 1.1 5.9L12 17l-5.3 2.8 1.1-5.9L3.5 9.8l5.9-.8z"/></svg></button>
-      <button type="button" class="vbtn" id="viewerClose" aria-label="Close" title="Close"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
-    </div>
-  </div>
   <div class="stage" id="stage">
     <img id="viewerImg" alt="" draggable="false">
     <p class="stage-msg" id="stageMsg">Loading photo…</p>
@@ -5821,18 +5822,8 @@ var WORLD_WATER = [
     if ($('planOverlay').hidden) document.body.style.overflow = '';
     revokePreviews();
     draft.photos = [];
-    // Came here from the photo viewer: go back to it, on the same photo, as long as the work still has one.
-    var back = backToViewer;
+    // Details opened from the photo viewer replaces it: Back goes to where you were before the viewer.
     backToViewer = null;
-    if (back) {
-      var it2 = items.find(function (x) { return x.id === back.id; });
-      if (it2 && photoList(it2).length) {
-        var vi = viewerItem(it2);
-        vi.index = Math.min(back.idx, vi.srcs.length - 1);
-        vi.quiet = true;
-        openViewer(vi);
-      }
-    }
   }
   async function doDelete() {
     clearTimeout(saveTimer); dirty = false;
@@ -6808,7 +6799,7 @@ var WORLD_WATER = [
 
   // Tapping a photo inside the edit sheet opens the viewer too, including photos not saved yet.
   function openDraftPhotos(i) {
-    if (!draft.photos.length) return;
+    if (!draft.photos.length || backToViewer) return; // came here from the viewer: the photo is already what you were just looking at
     openViewer({
       src: draftSrc(draft.photos[i]),
       srcs: draft.photos.map(draftSrc),
