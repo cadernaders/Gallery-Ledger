@@ -1433,26 +1433,30 @@ body.is-empty .nv-row { display: none; }
 .nb-view[aria-expanded="true"] svg { background: color-mix(in srgb, var(--accent) 14%, transparent); border-radius: 10px; box-sizing: content-box; padding: 6px 18px; margin: -6px -18px; }
 .nb-main { transition: opacity .2s ease .1s; }
 .nb-pages-open .nb-main, .nb-search-open .nb-main { opacity: 0; pointer-events: none; visibility: hidden; transition: opacity .16s ease, visibility 0s .16s; }
-/* Pages: the four buttons fade away and the four pages slide in from the left, one after another. Closing is just a fade. */
-.nb-pages { position: absolute; inset: 0; display: flex; align-items: center; opacity: 0; visibility: hidden; pointer-events: none; transition: opacity .16s ease, visibility 0s .16s; }
-.nb-pages > .tab { flex: 1 1 0; }
-.nb-pages-open .nb-pages { opacity: 1; visibility: visible; pointer-events: auto; transition: none; }
-.nb-pages-open .nb-pages > .tab { animation: nbslide .4s cubic-bezier(.2, .7, .3, 1) both; }
-.nb-pages-open .nb-pages > .tab:nth-child(1) { animation-delay: .06s; }
-.nb-pages-open .nb-pages > .tab:nth-child(2) { animation-delay: .11s; }
-.nb-pages-open .nb-pages > .tab:nth-child(3) { animation-delay: .16s; }
-.nb-pages-open .nb-pages > .tab:nth-child(4) { animation-delay: .21s; }
-@keyframes nbslide { from { opacity: 0; transform: translateX(-18px); } to { opacity: 1; transform: none; } }
+/* Pages: the pages come out of the Pages icon (far left) and slide to their places; closing sends them back into it. */
+.nb-pages { position: absolute; inset: 0; display: flex; align-items: center; visibility: hidden; pointer-events: none; transition: visibility 0s .34s; }
+.nb-pages > .tab { flex: 1 1 0; opacity: 0; transform: translateX(calc(var(--i, 0) * -100%)); transition: transform .3s cubic-bezier(.4, 0, .2, 1), opacity .2s ease; }
+.nb-pages > .tab:nth-child(1) { --i: 0; }
+.nb-pages > .tab:nth-child(2) { --i: 1; }
+.nb-pages > .tab:nth-child(3) { --i: 2; }
+.nb-pages > .tab:nth-child(4) { --i: 3; }
+.nb-pages-open .nb-pages { visibility: visible; pointer-events: auto; transition: none; }
+.nb-pages-open .nb-pages > .tab { opacity: 1; transform: none; transition: transform .4s cubic-bezier(.3, .7, .2, 1), opacity .25s ease; }
+.nb-pages-open .nb-pages > .tab:nth-child(2) { transition-delay: .03s; }
+.nb-pages-open .nb-pages > .tab:nth-child(3) { transition-delay: .06s; }
+.nb-pages-open .nb-pages > .tab:nth-child(4) { transition-delay: .09s; }
 /* Search: no panel. The field is the magnifier button itself: it grows a rim and stretches to the left, the other buttons fade. */
 .nb-search-open .nb-find { opacity: 0; transition: none; }
 .nb-find { transition: opacity .12s ease .3s; }
-.nb-search { position: absolute; inset: 0; visibility: hidden; pointer-events: none; transition: visibility 0s .42s; }
+.nb-search { position: absolute; inset: 0; overflow: hidden; visibility: hidden; pointer-events: none; transition: visibility 0s .42s; }
 .nb-search-open .nb-search { visibility: visible; pointer-events: none; transition: none; }
-.searchwrap.nb-sw { position: absolute; top: 50%; margin-top: -22px; height: 44px; box-sizing: border-box; left: calc(87.5% - 22px); right: calc(12.5% - 22px); transition: left .4s cubic-bezier(.4, 0, .2, 1), right .4s cubic-bezier(.4, 0, .2, 1); }
-.nb-search-open .searchwrap.nb-sw { left: 16px; right: 16px; pointer-events: auto; }
+.searchwrap.nb-sw { position: absolute; top: 50%; margin-top: -22px; height: 44px; box-sizing: border-box; left: calc(87.5% - 22px); right: calc(12.5% - 22px); border: 1px solid transparent; border-radius: 22px; background: transparent; transition: left .4s cubic-bezier(.4, 0, .2, 1), right .4s cubic-bezier(.4, 0, .2, 1), border-color .2s ease .22s, background-color .2s ease .22s, box-shadow .15s ease; }
+.nb-search-open .searchwrap.nb-sw { left: calc(12.5% - 22px); right: calc(12.5% - 22px); pointer-events: auto; border-color: var(--line); background: var(--surface); transition: left .4s cubic-bezier(.4, 0, .2, 1), right .4s cubic-bezier(.4, 0, .2, 1), border-color .2s ease, background-color .2s ease, box-shadow .2s ease; }
+.nb-search-open .searchwrap.nb-sw:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent); }
 .nb-sw svg { left: 9px; width: 26px; height: 26px; z-index: 1; transition: left .4s cubic-bezier(.4, 0, .2, 1), width .4s cubic-bezier(.4, 0, .2, 1), height .4s cubic-bezier(.4, 0, .2, 1); }
 .nb-search-open .nb-sw svg { left: 14px; width: 18px; height: 18px; }
-.searchwrap.nb-sw input.search { height: 44px; border-radius: 22px; opacity: 0; transition: opacity .15s ease .26s; }
+.searchwrap.nb-sw input.search { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; border-radius: 22px; background: none; box-shadow: none; opacity: 0; transition: opacity .12s ease; }
+.searchwrap.nb-sw input.search:focus { border: 0; box-shadow: none; outline: none; }
 .nb-search-open .searchwrap.nb-sw input.search { opacity: 1; transition: opacity .15s ease; }
 .nb-sw .filterbtn, .nb-sw .clearbtn { opacity: 0; transition: opacity .12s ease; }
 .nb-search-open .nb-sw .filterbtn, .nb-search-open .nb-sw .clearbtn { opacity: 1; transition: opacity .2s ease .24s; }
@@ -1579,7 +1583,7 @@ body.is-empty .nb-view, body.is-empty .nb-find { display: none; }
         <button type="button" class="btn" id="copyBackup">Copy</button>
       </div>
     </section>
-    <p class="buildline" id="buildLine">Version 2026-11-28 15:10</p>
+    <p class="buildline" id="buildLine">Version 2026-11-28 15:45</p>
       </div>
 </div>
 
