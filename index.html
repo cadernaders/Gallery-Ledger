@@ -298,7 +298,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .favtoggle[aria-pressed="true"] { color: var(--ochre); border-color: var(--ochre); }
 .favtoggle svg { display: block; }
 #favFilter[aria-pressed="true"] svg { fill: currentColor; }
-#viewerFav { display: inline-flex; align-items: center; justify-content: center; padding: 9px 12px; }
+#viewerFav { display: inline-flex; align-items: center; justify-content: center; padding: 0; width: 40px; min-width: 40px; border-radius: 999px; }
 #viewerFav[aria-pressed="true"] { color: #E3BD6A; border-color: #E3BD6A; }
 .filterbtn { position: relative; display: inline-flex; align-items: center; justify-content: center; height: 40px; width: 44px; box-sizing: border-box; padding: 0; font: inherit; font-size: 14px; font-weight: 500; color: var(--muted); background: var(--surface); border: 1px solid var(--line); border-radius: 8px; cursor: pointer; }
 .filterbtn[aria-pressed="true"], .filterbtn[aria-expanded="true"] { color: var(--ink); border-color: var(--accent); }
@@ -630,11 +630,12 @@ button, input, select, textarea { font: inherit; color: inherit; }
 /* Photo viewer */
 .viewer { position: fixed; inset: 0; z-index: 40; display: flex; flex-direction: column; background: var(--viewer-bg); color: var(--viewer-ink); padding-left: env(safe-area-inset-left, 0px); padding-right: env(safe-area-inset-right, 0px); }
 .viewer :focus-visible { outline-color: var(--viewer-ink); }
-.viewer-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: calc(11.5px + env(safe-area-inset-top, 0px)) 16px 8px; }
+.viewer-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: calc(12.5px + env(safe-area-inset-top, 0px)) 16px 8px; }
 .viewer-cap { min-width: 0; flex: 1; }
 .vinfo { display: flex; align-items: flex-end; justify-content: space-between; gap: 14px; width: 100%; }
 .vback { display: inline-flex; align-items: center; gap: 2px; height: 38px; padding: 0 14px 0 8px; border-radius: 999px; border: 0; box-shadow: 0 0 0 1px var(--viewer-line); background: var(--viewer-chip); color: var(--viewer-ink); font: inherit; font-size: 15px; font-weight: 600; cursor: pointer; }
-.vtopbtns { display: flex; gap: 8px; flex: none; }
+.vacts { display: flex; align-items: center; gap: 8px; flex: none; }
+.vacts .vbtn, .vacts .vpill { height: 40px; }
 .viewer-cap h2 { font-family: var(--font-display); font-size: 20px; font-weight: 500; font-style: italic; line-height: 1.15; overflow-wrap: anywhere; }
 .viewer-cap p { font-size: 13px; color: var(--viewer-muted); margin-top: 2px; }
 .stage { position: relative; flex: 1 1 auto; min-height: 0; overflow: hidden; touch-action: none; cursor: grab; user-select: none; -webkit-user-select: none; }
@@ -1740,7 +1741,7 @@ body.plan-open .addpop { z-index: 26; bottom: calc(env(safe-area-inset-bottom, 0
         <button type="button" class="btn" id="copyBackup">Copy</button>
       </div>
     </section>
-    <p class="buildline" id="buildLine">Version 2026-11-28 03:50</p>
+    <p class="buildline" id="buildLine">Version 2026-11-28 04:10</p>
       </div>
 </div>
 
@@ -1994,7 +1995,7 @@ body.plan-open .addpop { z-index: 26; bottom: calc(env(safe-area-inset-bottom, 0
       <div class="autofill wp-suggest" id="autofillRow" hidden>
       <div class="wp-sugtxt"><small>Suggestions</small><span class="note" id="autofillNote"></span></div>
       <div class="wp-sugbtns">
-        <button type="button" class="btn" id="recogBtn" hidden>Recognise from photo</button>
+        <button type="button" class="btn" id="recogBtn" hidden>Recognise</button>
         <button type="button" class="btn primary" id="autofillBtn">Autofill details</button>
         <button type="button" class="btn" id="placardBtn">Scan placard</button>
       </div>
@@ -2038,9 +2039,6 @@ body.plan-open .addpop { z-index: 26; bottom: calc(env(safe-area-inset-bottom, 0
 <div class="viewer" id="viewer" role="dialog" aria-modal="true" aria-labelledby="viewerTitle" hidden>
   <div class="viewer-top">
     <button type="button" class="vback" id="viewerClose" aria-label="Back"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.5 5l-7 7 7 7"/></svg>Back</button>
-    <div class="vtopbtns">
-      <button type="button" class="vbtn" id="viewerFav" aria-pressed="false" aria-label="Favorite" title="Favorite" hidden><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.6l2.6 5.4 5.9.8-4.3 4.1 1.1 5.9L12 17l-5.3 2.8 1.1-5.9L3.5 9.8l5.9-.8z"/></svg></button>
-    </div>
   </div>
   <div class="stage" id="stage">
     <img id="viewerImg" alt="" draggable="false">
@@ -2059,7 +2057,10 @@ body.plan-open .addpop { z-index: 26; bottom: calc(env(safe-area-inset-bottom, 0
         <h2 id="viewerTitle"></h2>
         <p id="viewerSub"></p>
       </div>
-      <button type="button" class="vpill" id="viewerDetails" aria-label="Details" hidden><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg><span>Details</span></button>
+      <div class="vacts">
+        <button type="button" class="vbtn" id="viewerFav" aria-pressed="false" aria-label="Favorite" title="Favorite" hidden><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.6l2.6 5.4 5.9.8-4.3 4.1 1.1 5.9L12 17l-5.3 2.8 1.1-5.9L3.5 9.8l5.9-.8z"/></svg></button>
+        <button type="button" class="vpill" id="viewerDetails" aria-label="Details" hidden><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg><span>Details</span></button>
+      </div>
     </div>
   </div>
 </div>
@@ -2330,6 +2331,7 @@ var WORLD_WATER = [
     if (!norm(it.year)) m.push('the year');
     if (!norm(it.medium)) m.push('the medium');
     if (!movList(it).length) m.push('an art movement');
+    if (!norm(it.subject)) m.push('the subject');
     if (!norm(it.museum)) m.push('the museum');
     if (!norm(it.city) || !norm(it.country)) m.push('the city and country');
     return m;
@@ -5544,7 +5546,7 @@ var WORLD_WATER = [
     fitTitle();
     formComplete = !!editingId && !editingDraft && sheetReady && sheetWasWork && missingInfo({
       photoId: (draft.photos || []).length ? 'x' : '', title: $('f-title').value, artist: $('f-artist').value, year: $('f-year').value,
-      medium: $('f-medium').value, movements: draftMov, museum: $('f-museum').value, city: $('f-city').value, country: $('f-country').value
+      medium: $('f-medium').value, movements: draftMov, subject: draftSubject, museum: $('f-museum').value, city: $('f-city').value, country: $('f-country').value
     }).length === 0;
     var hc = document.querySelector('.herocrop');
     if (hc) hc.hidden = !editingDraft;
@@ -5566,6 +5568,7 @@ var WORLD_WATER = [
     if (!norm($('f-year').value)) out.push({ label: 'Year', go: go('f-year') });
     if (!norm($('f-medium').value)) out.push({ label: 'Medium', go: function () { reveal(); if (!$('medRow').hidden) openMedSheet(); else go('f-medium')(); } });
     if (!(draftMov || []).length) out.push({ label: 'Art movement', go: function () { reveal(); openMvSheet(); } });
+    if (!draftSubject) out.push({ label: 'Subject', go: function () { reveal(); renderSubject(); $('subSheet').hidden = false; } });
     if (!norm($('f-museum').value)) out.push({ label: 'Museum', go: go('f-museum') });
     if (!norm($('f-city').value) || !norm($('f-country').value)) out.push({ label: 'City and country', go: go('f-location', true) });
     return out;
@@ -6213,6 +6216,7 @@ var WORLD_WATER = [
         RECOG.qid = w[0]; RECOG.qidTitle = norm(w[1]);
         $('f-artist').value = /^Q\d+$/.test(w[2] || '') ? '' : (w[2] || ''); $('f-artist').dispatchEvent(new Event('input', { bubbles: true }));
         out.hidden = true;
+        $('autofillNote').textContent = 'Found it. Filling in the rest\u2026';
         $('autofillBtn').click();
       });
       out.append(b);
@@ -6275,7 +6279,7 @@ var WORLD_WATER = [
     if (!known.length && !hasPhoto) { note.textContent = 'Enter a title or an artist, or add a photo, first.'; return; }
     var btn = $('autofillBtn');
     btn.disabled = true;
-    note.textContent = 'Looking closely…';
+    note.textContent = sampleFn.wiki ? 'Filling in the rest\u2026' : 'Looking closely\u2026';
     var opts = { cache: { gcTime: 3600000 } };
     var usedPhoto = false;
     try {
