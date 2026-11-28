@@ -1416,24 +1416,27 @@ body.plan-open .addpop { z-index: 26; bottom: calc(env(safe-area-inset-bottom, 0
 @keyframes popout { to { opacity: 0; transform: translateY(8px) scale(.98); } }
 @media (prefers-reduced-motion: reduce) { #main, #main.swap-in { animation: none; transition: none; } }
 
-/* nv-: the magnifier beside the totals; the pills slide away and the search bar opens in their place */
-.nv-row { display: flex; align-items: center; gap: 10px; margin: 8px 0 10px; min-height: 46px; }
-.nv-row > #stats { flex: 1 1 auto; min-width: 0; margin: 0; transition: transform .17s ease, opacity .17s ease; }
-.nv-find { flex: none; display: grid; place-items: center; width: 40px; height: 32px; padding: 0; border: 1px solid color-mix(in srgb, var(--line) 70%, transparent); border-radius: 999px; background: none; color: var(--muted); cursor: pointer; transition: transform .17s ease, opacity .17s ease; }
-.nv-find:active { color: var(--accent); }
-.nv-row.nv-slide > #stats { transform: translateX(-28px); opacity: 0; pointer-events: none; }
-.nv-row.nv-slide > .nv-find { transform: translateX(-14px); opacity: 0; pointer-events: none; }
-.nv-row.nv-gone { display: none; }
+/* nv-: the magnifier beside the totals stretches left into the search bar; the pills slide off to the left */
+.nv-row { position: relative; display: flex; align-items: center; margin: 8px 0 10px; min-height: 44px; }
+.nv-row > #stats { flex: 1 1 auto; min-width: 0; margin: 0; padding-right: 48px; transition: transform .3s ease, opacity .22s ease; }
+.nv-sw { position: absolute !important; right: 0; top: 50%; transform: translateY(-50%); flex: none !important; width: 40px; height: 32px; box-sizing: border-box; overflow: hidden; border: 1px solid color-mix(in srgb, var(--line) 70%, transparent); border-radius: 22px; background: none; cursor: pointer; transition: width .3s ease, height .3s ease, right .3s ease, border-color .2s ease; }
+.nv-sw svg { z-index: 1; left: 10px !important; transition: left .3s ease, color .2s ease; }
+.nv-sw input.search { position: absolute; inset: 0; width: 100%; height: 100%; border-radius: 22px; opacity: 0; pointer-events: none; transition: opacity .2s ease; }
+.nv-sw .filterbtn, .nv-sw .clearbtn { opacity: 0; pointer-events: none; transition: opacity .2s ease; }
+.nv-cancel { position: absolute; right: 0; top: 50%; transform: translateY(-50%); height: 44px; padding: 0 2px 0 8px; border: 0; background: none; font: inherit; font-size: 15px; font-weight: 500; color: var(--accent); cursor: pointer; opacity: 0; pointer-events: none; transition: opacity .2s ease; }
+.nv-row.nv-open > #stats { transform: translateX(-110%); opacity: 0; pointer-events: none; }
+.nv-row.nv-open .nv-sw { right: 62px; width: calc(100% - 62px); height: 44px; border-color: transparent; cursor: default; overflow: visible; }
+.nv-row.nv-open .nv-sw svg { left: 14px !important; }
+.nv-row.nv-open .nv-sw input.search { opacity: 1; pointer-events: auto; transition-delay: .1s; }
+.nv-row.nv-open .nv-sw .filterbtn, .nv-row.nv-open .nv-sw .clearbtn { opacity: 1; pointer-events: auto; transition-delay: .12s; }
+.nv-row.nv-open .nv-cancel { opacity: 1; pointer-events: auto; transition-delay: .12s; }
 body.is-empty .nv-row { display: none; }
+/* the filter panel and chips now live under the row; nothing pins to the top any more */
+.controls { position: static; margin: 0 0 10px; padding: 0; background: none; box-shadow: none; transition: none; }
+.controls.away { transform: none; }
 .controls.collapsed { display: none !important; }
 .controls.collapsed ~ #main { margin-top: 6px; }
-.controls .searchwrap { flex: 1 1 0; min-width: 0; }
-.nv-cancel { flex: none; height: 44px; padding: 0 4px 0 6px; border: 0; background: none; font: inherit; font-size: 15px; font-weight: 500; color: var(--accent); cursor: pointer; }
-.controls.nv-in { animation: nvin .22s ease both; }
-.controls.nv-out { animation: nvout .17s ease both; }
-@keyframes nvin { from { opacity: 0; transform: translateX(28px); } to { opacity: 1; transform: none; } }
-@keyframes nvout { from { opacity: 1; transform: none; } to { opacity: 0; transform: translateX(28px); } }
-@media (prefers-reduced-motion: reduce) { .controls.nv-in, .controls.nv-out { animation: none; } .nv-row > #stats, .nv-find { transition: none; } }
+@media (prefers-reduced-motion: reduce) { .nv-row > #stats, .nv-sw, .nv-sw svg, .nv-sw input.search, .nv-sw .filterbtn, .nv-sw .clearbtn, .nv-cancel { transition: none; } }
 </style>
 
 <div class="wrap">
@@ -1445,19 +1448,19 @@ body.is-empty .nv-row { display: none; }
 
   <div class="nv-row" id="nvRow">
     <div class="stats" id="stats" aria-label="Totals"></div>
-    <button type="button" class="nv-find" id="searchBtn" aria-label="Search and filter" title="Search and filter"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg></button>
-  </div>
-
-  <div class="draftbar" id="draftBar" hidden></div>
-
-  <div class="controls collapsed">
-    <div class="searchwrap">
+    <div class="searchwrap nv-sw" id="nvSw">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg>
       <input type="search" id="q" class="field-input search" enterkeyhint="search" placeholder="Search your collection" aria-label="Search works">
       <button type="button" class="clearbtn auto" aria-label="Clear" tabindex="-1"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
       <button type="button" class="filterbtn" id="filtersBtn" aria-expanded="false" aria-controls="filterPanel" aria-label="Filters" title="Filters"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16l-6.2 7.4V19l-3.6-1.8v-4.8z"/></svg><span class="fbadge" id="fBadge" hidden>0</span></button>
     </div>
-    <button type="button" class="nv-cancel" id="searchCancel">Cancel</button>
+    <button type="button" class="nv-cancel" id="searchCancel" tabindex="-1">Cancel</button>
+  </div>
+
+  <div class="draftbar" id="draftBar" hidden></div>
+
+  <div class="controls collapsed">
+    
     <div class="fpanel" id="filterPanel" hidden>
       <div class="frow">
         <span class="flabel">Show</span>
@@ -1558,7 +1561,7 @@ body.is-empty .nv-row { display: none; }
         <button type="button" class="btn" id="copyBackup">Copy</button>
       </div>
     </section>
-    <p class="buildline" id="buildLine">Version 2026-11-28 12:05</p>
+    <p class="buildline" id="buildLine">Version 2026-11-28 12:40</p>
       </div>
 </div>
 
@@ -2365,39 +2368,26 @@ var WORLD_WATER = [
     });
     if (n > 1) chips.append(el('button', { type: 'button', class: 'link', onclick: function () { ui.filter = 'all'; ui.fav = false; ui.fneed = false; ui.fmov = ''; ui.fmed = ''; ui.fsub = ''; ui.fcent = ''; ui.fctry = ''; ui.fmus = ''; ui.fart = ''; render(); } }, 'Clear all'));
     chips.hidden = !n;
-    // The search bar rests out of sight until the magnifier is tapped; it stays open while a search or filter is active.
+    // The magnifier stretches into the search bar and stays open while a search or filter is active.
     var others = n - (ui.filter !== 'all' ? 1 : 0);
-    setSearchShown(ui.sopen || !!ui.q || ui.fopen || others > 0, !searchInit);
-    searchInit = true;
+    setSearchShown(ui.sopen || !!ui.q || ui.fopen || others > 0);
+    document.querySelector('.controls').classList.toggle('collapsed', !(ui.fopen || others > 0));
   }
-  // The pills slide off to the left and the search bar opens in their place; closing reverses it.
-  var searchShown = false, searchInit = false, searchTimer = 0;
-  function setSearchShown(show, instant) {
-    if (show === searchShown) return;
-    searchShown = show;
-    var row = $('nvRow'), c = document.querySelector('.controls');
-    clearTimeout(searchTimer);
-    c.classList.remove('nv-in', 'nv-out');
-    if (instant || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      row.classList.toggle('nv-gone', show); row.classList.remove('nv-slide'); c.classList.toggle('collapsed', !show);
-      return;
-    }
-    if (show) {
-      row.classList.add('nv-slide');
-      searchTimer = setTimeout(function () { row.classList.add('nv-gone'); c.classList.remove('collapsed'); c.classList.add('nv-in'); }, 170);
-    } else {
-      c.classList.add('nv-out');
-      searchTimer = setTimeout(function () {
-        c.classList.remove('nv-out'); c.classList.add('collapsed'); row.classList.remove('nv-gone');
-        requestAnimationFrame(function () { requestAnimationFrame(function () { row.classList.remove('nv-slide'); }); });
-      }, 170);
-    }
+  function setSearchShown(show) {
+    var row = $('nvRow'), sw = $('nvSw');
+    row.classList.toggle('nv-open', show);
+    if (show) { sw.removeAttribute('role'); sw.removeAttribute('tabindex'); sw.removeAttribute('aria-label'); }
+    else { sw.setAttribute('role', 'button'); sw.tabIndex = 0; sw.setAttribute('aria-label', 'Search and filter'); }
+    $('q').tabIndex = show ? 0 : -1; $('filtersBtn').tabIndex = show ? 0 : -1; $('searchCancel').tabIndex = show ? 0 : -1;
   }
-  $('searchBtn').addEventListener('click', function () {
+  function openSearch() {
+    if ($('nvRow').classList.contains('nv-open')) return;
     ui.sopen = true;
     renderFilters();
-    setTimeout(function () { $('q').focus(); }, 260);
-  });
+    setTimeout(function () { $('q').focus(); }, 300);
+  }
+  $('nvSw').addEventListener('click', openSearch);
+  $('nvSw').addEventListener('keydown', function (e) { if ((e.key === 'Enter' || e.key === ' ') && e.target === $('nvSw')) { e.preventDefault(); openSearch(); } });
   $('searchCancel').addEventListener('click', function () {
     ui.sopen = false; ui.fopen = false; ui.q = ''; $('q').value = '';
     ui.fav = false; ui.fneed = false; ui.fmov = ''; ui.fmed = ''; ui.fsub = ''; ui.fcent = ''; ui.fctry = ''; ui.fmus = ''; ui.fart = '';
@@ -2803,7 +2793,7 @@ var WORLD_WATER = [
   var PAGE_SIZE = 60, feedIO = null, feedSig = '';
   // The search bar stays pinned while you scroll; everything that scrolls under it allows for its height.
   var barHidden = false, lastScrollY = 0, upRun = 0;
-  function stickH() { var c = document.querySelector('.controls'); return c && !barHidden ? c.offsetHeight : 0; }
+  function stickH() { return 0; }
   function updateStick() { document.documentElement.style.setProperty('--stick', stickH() + 'px'); }
   window.addEventListener('resize', updateStick);
   // Scroll down and the search bar slides away to give the artwork the whole screen; scroll up and it returns.
