@@ -1595,7 +1595,7 @@ body.is-empty .nb-view, body.is-empty .nb-find { display: none; }
         <button type="button" class="btn" id="copyBackup">Copy</button>
       </div>
     </section>
-    <p class="buildline" id="buildLine">Version 2026-11-28 16:35</p>
+    <p class="buildline" id="buildLine">Version 2026-11-28 16:50</p>
       </div>
 </div>
 
@@ -2111,11 +2111,30 @@ var WORLD_WATER = [
     };
     pins.forEach(function (id) { box.append(mk(id)); });
   }
+  // A light tap under your finger for Pages, Search, the page icons and the search ×. Web pages cannot officially do this on the iPhone;
+  // this uses the little hidden switch that newer iOS (17.4 and later) ticks for. If the phone does not allow it, nothing happens.
+  var hapticLabel = null;
+  function haptic() {
+    try {
+      if (navigator.vibrate) { navigator.vibrate(8); return; }
+      if (!hapticLabel) {
+        var sw = document.createElement('input');
+        sw.type = 'checkbox'; sw.id = 'hapticSw'; sw.setAttribute('switch', ''); sw.setAttribute('aria-hidden', 'true'); sw.tabIndex = -1;
+        hapticLabel = document.createElement('label');
+        hapticLabel.setAttribute('for', 'hapticSw'); hapticLabel.setAttribute('aria-hidden', 'true');
+        hapticLabel.style.cssText = 'position:fixed;left:0;bottom:0;width:1px;height:1px;opacity:0;pointer-events:none;overflow:hidden';
+        sw.style.cssText = 'position:absolute;left:0;top:0;opacity:0;pointer-events:none';
+        hapticLabel.append(sw);
+        document.body.append(hapticLabel);
+      }
+      hapticLabel.click();
+    } catch (e) { /* no haptics on this phone: fine */ }
+  }
   function setNav(open) {
     $('tabbar').classList.toggle('nb-pages-open', open);
     $('navBtn').setAttribute('aria-expanded', String(open));
   }
-  $('navBtn').addEventListener('click', function () { closePops(); setNav(true); });
+  $('navBtn').addEventListener('click', function () { haptic(); closePops(); setNav(true); });
   // Tapping anywhere else closes the list too.
   // That tap only closes the list; it does not also press whatever was underneath.
   document.addEventListener('click', function (e) {
@@ -2430,10 +2449,11 @@ var WORLD_WATER = [
     ui.sopen = true;
     renderFilters();
   }
-  $('searchBtn').addEventListener('click', openSearch);
+  $('searchBtn').addEventListener('click', function () { haptic(); openSearch(); });
   // The x at the end of the field: the first tap clears what you typed; with nothing typed it closes the search and clears the filters.
   $('searchClose').addEventListener('pointerdown', function (e) { e.preventDefault(); });
   $('searchClose').addEventListener('click', function () {
+    haptic();
     if (ui.q) { ui.q = ''; $('q').value = ''; render(); return; }
     ui.sopen = false; ui.fopen = false;
     ui.fav = false; ui.fneed = false; ui.fmov = ''; ui.fmed = ''; ui.fsub = ''; ui.fcent = ''; ui.fctry = ''; ui.fmus = ''; ui.fart = '';
@@ -6468,7 +6488,7 @@ var WORLD_WATER = [
     }, 150);
   }
   document.querySelectorAll('[data-view]:not(.tab)').forEach(function (b) { b.addEventListener('click', function () { goView(b); }); });
-  $('tabbar').addEventListener('click', function (e) { var b = e.target.closest('.tab[data-view]'); if (b) { goView(b); setNav(false); } });
+  $('tabbar').addEventListener('click', function (e) { var b = e.target.closest('.tab[data-view]'); if (b) { haptic(); goView(b); setNav(false); } });
   buildTabs();
   $('colsBtn').addEventListener('click', function () {
     var opts = wallOptions(), cur = wallCols();
