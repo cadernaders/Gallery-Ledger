@@ -1426,8 +1426,8 @@ body.plan-open .addpop { z-index: 26; bottom: calc(env(safe-area-inset-bottom, 0
 .nv-sw input.search { position: absolute; inset: 0; width: 100%; height: 100%; border-radius: 22px; opacity: 0; pointer-events: none; transition: opacity .2s ease; }
 .nv-sw .filterbtn, .nv-sw .clearbtn { opacity: 0; pointer-events: none; transition: opacity .2s ease; }
 .nv-cancel { position: absolute; right: 0; top: 0; height: 44px; padding: 0 2px 0 8px; border: 0; background: none; font: inherit; font-size: 15px; font-weight: 500; color: var(--accent); cursor: pointer; opacity: 0; pointer-events: none; transition: opacity .2s ease; }
-.nv-dock.nv-float { position: fixed; top: calc(env(safe-area-inset-top, 0px) + 6px); right: auto; z-index: 12; transform: translateY(var(--nv-off, 0px)); }
-.nv-dock.nv-float.nv-snap { transition: transform .2s ease; }
+.nv-dock.nv-float { position: fixed; top: calc(env(safe-area-inset-top, 0px) + 6px); right: auto; z-index: 12; opacity: 0; visibility: hidden; transform: translateY(calc(-100% - env(safe-area-inset-top, 0px) - 16px)); transition: transform .26s ease, opacity .2s ease, visibility 0s .26s; }
+.nv-dock.nv-float.nv-show { opacity: 1; visibility: visible; transform: none; transition: transform .26s ease, opacity .2s ease; }
 .nv-float .nv-sw { background: var(--surface); border-color: transparent; box-shadow: 0 4px 16px rgba(40, 30, 20, .16); }
 .nv-float .nv-cancel { background: var(--surface); border-radius: 22px; padding: 0 12px; box-shadow: 0 4px 16px rgba(40, 30, 20, .16); }
 .nv-row.nv-open > #stats { transform: translateX(-110%); opacity: 0; pointer-events: none; }
@@ -1570,7 +1570,7 @@ body.is-empty .nv-row { display: none; }
         <button type="button" class="btn" id="copyBackup">Copy</button>
       </div>
     </section>
-    <p class="buildline" id="buildLine">Version 2026-11-28 13:50</p>
+    <p class="buildline" id="buildLine">Version 2026-11-28 13:10</p>
       </div>
 </div>
 
@@ -2392,7 +2392,6 @@ var WORLD_WATER = [
   function openSearch() {
     if ($('nvRow').classList.contains('nv-open')) return;
     ui.sopen = true;
-    navReveal();
     renderFilters();
     setTimeout(function () { $('q').focus(); }, 300);
   }
@@ -2815,39 +2814,28 @@ var WORLD_WATER = [
     c.classList.toggle('away', hide);
     updateStick();
   }
-  // The magnifier rides in the pills row and leaves with it as you scroll down. Once the row is off the top it is a fixed
-  // piece that follows your scrolling one for one: scroll up and it comes down at your speed, scroll down and it goes back up.
-  var navFloat = false, navOff = 0;
-  function navInset() { return parseFloat(getComputedStyle(document.documentElement).paddingTop) || 0; }
-  function navReach() { return 44 + navInset() + 6 + 14; }
-  function navApply() {
-    var d = $('nvDock');
-    d.style.setProperty('--nv-off', navOff + 'px');
-    d.style.visibility = navOff <= -navReach() + 1 ? 'hidden' : '';
-  }
+  // The magnifier rides in the pills row. When the row scrolls off the top it floats there instead: it hides as you
+  // scroll down and slides back in as you scroll up. At the top of the page it settles back into the row.
+  var navFloat = false, navShown = false, navUp = 0;
+  function navSet(v) { if (v === navShown) return; navShown = v; $('nvDock').classList.toggle('nv-show', v); }
   function navPlace() {
     var row = $('nvRow'), d = $('nvDock');
-    if (!row || !d || row.offsetParent === null) return false;
-    var r = row.getBoundingClientRect(), top = navInset() + 6, fl = r.top < top, entered = false;
+    if (!row || !d || row.offsetParent === null) return;
+    var r = row.getBoundingClientRect(), inset = parseFloat(getComputedStyle(document.documentElement).paddingTop) || 0;
+    var fl = r.top < inset + 6;
     if (fl !== navFloat) {
-      navFloat = fl; entered = fl;
-      d.classList.toggle('nv-float', fl);
-      if (fl) navOff = Math.max(-navReach(), Math.min(0, r.top - top));
-      else { d.style.left = ''; d.style.width = ''; d.style.removeProperty('--nv-off'); d.style.visibility = ''; d.classList.remove('nv-snap'); }
+      navFloat = fl; navShown = false; navUp = 0;
+      d.classList.remove('nv-show'); d.classList.toggle('nv-float', fl);
+      if (!fl) { d.style.left = ''; d.style.width = ''; }
     }
-    if (fl) { d.style.left = r.left + 'px'; d.style.width = r.width + 'px'; if (entered) navApply(); }
-    return entered;
+    if (fl) { d.style.left = r.left + 'px'; d.style.width = r.width + 'px'; }
   }
   function navScroll(dy) {
-    if (navPlace() || !navFloat) return;
-    if ($('nvRow').classList.contains('nv-open') && document.activeElement === $('q')) navOff = 0;
-    else navOff = Math.max(-navReach(), Math.min(0, navOff - dy));
-    navApply();
-  }
-  function navReveal() {
+    navPlace();
     if (!navFloat) return;
-    var d = $('nvDock'); d.classList.add('nv-snap'); navOff = 0; navApply();
-    setTimeout(function () { d.classList.remove('nv-snap'); }, 260);
+    if ($('nvRow').classList.contains('nv-open') && document.activeElement === $('q')) { navSet(true); return; }
+    if (dy > 5) { navUp = 0; navSet(false); }
+    else if (dy < 0) { navUp += -dy; if (navUp >= 60) { navSet(true); navUp = 0; } }
   }
   window.addEventListener('resize', navPlace);
   window.addEventListener('scroll', function () {
