@@ -1414,7 +1414,8 @@ body.plan-open .addpop { z-index: 26; bottom: calc(env(safe-area-inset-bottom, 0
 @keyframes popout { to { opacity: 0; transform: translateY(8px) scale(.98); } }
 @media (prefers-reduced-motion: reduce) { #main, #main.swap-in { animation: none; transition: none; } }
 
-/* nv-band: a real strip behind the clock (not a pseudo-element), so iOS treats it as a fixed header and leaves its own fade out */
+/* nv-band: a strip behind the clock on every page except the gallery, where the paintings run clear to the top */
+body.in-gallery .nv-band { display: none; }
 .nv-band { position: fixed; top: 0; left: 0; right: 0; height: env(safe-area-inset-top, 0px); background: var(--bg); z-index: 11; }
 /* nv-: the magnifier beside the totals stretches left into the search bar; the pills slide off to the left.
    Past the top of the page the magnifier leaves the pills behind: it hides as you scroll down and returns as you scroll up. */
@@ -1572,7 +1573,7 @@ body.is-empty .nv-row { display: none; }
         <button type="button" class="btn" id="copyBackup">Copy</button>
       </div>
     </section>
-    <p class="buildline" id="buildLine">Version 2026-11-28 14:55</p>
+    <p class="buildline" id="buildLine">Version 2026-11-28 15:20</p>
       </div>
 </div>
 
@@ -2436,6 +2437,7 @@ var WORLD_WATER = [
     if (!inTimeline) $('mvSlot').replaceChildren();
     document.body.classList.toggle('in-timeline', inTimeline);
     document.body.classList.toggle('in-map', ui.view === 'map');
+    document.body.classList.toggle('in-gallery', ui.view === 'gallery');
     $('tlBtn').hidden = !(inGallery || inList || inTimeline);
     $('listBtn').hidden = !(inGallery || inList || inTimeline);
     cb.setAttribute('aria-pressed', String(inGallery));
