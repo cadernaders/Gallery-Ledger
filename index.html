@@ -1600,7 +1600,7 @@ body.is-empty .nb-view, body.is-empty .nb-find { display: none; }
         <button type="button" class="btn" id="copyBackup">Copy</button>
       </div>
     </section>
-    <p class="buildline" id="buildLine">Version 2026-11-28 18:10</p>
+    <p class="buildline" id="buildLine">Version 2026-11-28 18:25</p>
       </div>
 </div>
 
@@ -2519,7 +2519,7 @@ var WORLD_WATER = [
     });
     var here = ui.view === 'list' ? 'gallery' : ui.view === 'map' ? 'museums' : ui.view;
     var hereName = (SECTIONS.filter(function (x) { return x.id === here; })[0] || { name: '' }).name;
-    $('navBtn').innerHTML = SECTION_ICONS[here] || '';
+    if ($('navBtn').innerHTML !== (SECTION_ICONS[here] || '')) $('navBtn').innerHTML = SECTION_ICONS[here] || '';
     $('navBtn').setAttribute('aria-label', 'Pages. You are in ' + hereName);
     renderFilters();
     var noSort = ui.view === 'timeline' || ui.view === 'map';
@@ -6519,7 +6519,13 @@ var WORLD_WATER = [
     }, 150);
   }
   document.querySelectorAll('[data-view]:not(.tab)').forEach(function (b) { b.addEventListener('click', function () { goView(b); }); });
-  $('tabbar').addEventListener('click', function (e) { var b = e.target.closest('.tab[data-view]'); if (b) { haptic(); goView(b); setNav(false, b); } });
+  $('tabbar').addEventListener('click', function (e) { var b = e.target.closest('.tab[data-view]'); if (b) {
+      haptic();
+      // The Pages icon becomes the chosen page right away, so it never shows the old page while the new one is still loading.
+      var sec = b.dataset.view === 'list' ? 'gallery' : b.dataset.view === 'map' ? 'museums' : b.dataset.view;
+      if (SECTION_ICONS[sec]) $('navBtn').innerHTML = SECTION_ICONS[sec];
+      goView(b); setNav(false, b);
+    } });
   buildTabs();
   $('colsBtn').addEventListener('click', function () {
     var opts = wallOptions(), cur = wallCols();
