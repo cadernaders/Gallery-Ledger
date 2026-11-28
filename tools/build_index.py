@@ -47,7 +47,10 @@ def fetch_works():
                 continue
             seen.add(qid)
             img = b["img"]["value"]
-            works.append([qid, title, b.get("aLabel", {}).get("value", ""), b.get("year", {}).get("value", ""), img.rsplit("/", 1)[-1]])
+            artist = b.get("aLabel", {}).get("value", "")
+            if artist.startswith("Q") and artist[1:].isdigit():
+                artist = ""  # no English label
+            works.append([qid, title, artist, b.get("year", {}).get("value", ""), img.rsplit("/", 1)[-1]])
         page += 1
         print("works so far", len(works), file=sys.stderr)
     return works[:MAX_WORKS]
