@@ -1419,6 +1419,7 @@ body.plan-open .addpop { z-index: 26; bottom: calc(env(safe-area-inset-bottom, 0
 /* nv-: the search magnifier in the header; the search bar rests out of sight until it is tapped */
 .nv-topbtns { display: flex; align-items: center; gap: 8px; flex: none; }
 .controls.collapsed { display: none !important; }
+.controls.collapsed ~ #main { margin-top: 16px; }
 body.is-empty #searchBtn { display: none; }
 #searchBtn[aria-pressed="true"] { color: var(--accent); border-color: var(--accent); }
 </style>
@@ -1544,7 +1545,7 @@ body.is-empty #searchBtn { display: none; }
         <button type="button" class="btn" id="copyBackup">Copy</button>
       </div>
     </section>
-    <p class="buildline" id="buildLine">Version 2026-11-28 11:30</p>
+    <p class="buildline" id="buildLine">Version 2026-11-28 11:45</p>
       </div>
 </div>
 
