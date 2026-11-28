@@ -1579,7 +1579,7 @@ body.is-empty .nb-view, body.is-empty .nb-find { display: none; }
         <button type="button" class="btn" id="copyBackup">Copy</button>
       </div>
     </section>
-    <p class="buildline" id="buildLine">Version 2026-11-28 14:50</p>
+    <p class="buildline" id="buildLine">Version 2026-11-28 15:10</p>
       </div>
 </div>
 
@@ -2424,15 +2424,19 @@ var WORLD_WATER = [
     if (document.activeElement) document.activeElement.blur();
     render();
   });
-  // When the iPhone keyboard is up, lift the bar so the search field stays above it.
+  // When the iPhone keyboard is up for the search field, lift the bar so the field stays above it.
+  // Only while you are typing in the field: scrolling and bouncing also nudge the visible area, and must never move the bar.
   if (window.visualViewport) {
     var liftBar = function () {
-      var v = window.visualViewport, off = Math.max(0, Math.round(window.innerHeight - v.height - v.offsetTop)), bar = $('tabbar');
-      bar.style.transform = off > 1 ? 'translateY(-' + off + 'px)' : '';
-      bar.classList.toggle('kb-up', off > 1);
+      var v = window.visualViewport, bar = $('tabbar');
+      var off = Math.max(0, Math.round(window.innerHeight - v.height - v.offsetTop));
+      var typing = document.activeElement === $('q');
+      if (typing && off > 120) { bar.style.transform = 'translateY(-' + off + 'px)'; bar.classList.add('kb-up'); }
+      else { bar.style.transform = ''; bar.classList.remove('kb-up'); }
     };
     window.visualViewport.addEventListener('resize', liftBar);
     window.visualViewport.addEventListener('scroll', liftBar);
+    $('q').addEventListener('blur', function () { setTimeout(liftBar, 0); });
   }
   $('filtersBtn').addEventListener('click', function () { ui.fopen = !ui.fopen; renderFilters(); if (ui.fopen) window.scrollTo({ top: 0, behavior: 'smooth' }); });
   $('fMoreBtn').addEventListener('click', function () { var open = ui.fmore || ($('fMoreBtn').getAttribute('aria-expanded') === 'true'); ui.fmore = !open; render(); });
