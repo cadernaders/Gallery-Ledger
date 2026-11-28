@@ -439,8 +439,6 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .where strong { color: var(--ink); font-weight: 600; }
 .where .pin { flex: none; margin-top: 3px; color: var(--accent); }
 .where.unknown { color: var(--muted); font-style: italic; }
-.dabout { margin: 10px 0 0; font-size: 14px; line-height: 1.5; color: var(--muted); }
-.dabout a { color: var(--accent); white-space: nowrap; }
 .notes { margin-top: 8px; font-size: 14px; color: var(--ink); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; }
 .foot { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 14px; margin-top: 8px; }
 .pill { display: inline-block; white-space: nowrap; flex: none; font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: 999px; }
@@ -1746,7 +1744,7 @@ body.plan-open .addpop { z-index: 26; bottom: calc(env(safe-area-inset-bottom, 0
         <button type="button" class="btn" id="copyBackup">Copy</button>
       </div>
     </section>
-    <p class="buildline" id="buildLine">Version 2026-11-28 05:45</p>
+    <p class="buildline" id="buildLine">Version 2026-11-28 06:00</p>
       </div>
 </div>
 
@@ -2234,8 +2232,14 @@ var WORLD_WATER = [
   var items = [];       // finished works
   var allItems = [];    // everything stored, drafts included
   var drafts = [];      // photos saved with quick add, still to finish
+  var aboutCleaned = {};
   function setAll(list) {
     allItems = list;
+    // The Wikipedia description feature was removed; clear any saved ones once.
+    var stale = list.filter(function (i) { return i.about && !aboutCleaned[i.id]; });
+    if (stale.length) setTimeout(function () {
+      stale.forEach(function (i) { aboutCleaned[i.id] = 1; var c = Object.assign({}, i); delete c.about; delete c.aboutUrl; saveItem(c).catch(function () {}); });
+    }, 0);
     items = list.filter(function (i) { return !i.draft; });
     drafts = list.filter(function (i) { return i.draft; }).sort(function (a, b) { return (a.createdAt || 0) - (b.createdAt || 0); });
   }
@@ -2942,7 +2946,6 @@ var WORLD_WATER = [
           ? factRow(pinIcon(), [it.museum ? el('strong', { text: it.museum }) : null, it.museum && loc ? ', ' : null, loc])
           : factRow(pinIcon(), 'Museum not set', 'unknown'),
         seenFact(it)),
-      it.about ? el('p', { class: 'dabout' }, it.about + ' ', /^https:\/\/[a-z.]*wikipedia\.org\//.test(it.aboutUrl || '') ? el('a', { href: it.aboutUrl, target: '_blank', rel: 'noopener', text: 'Wikipedia' }) : null) : null,
       it.notes ? el('p', { class: 'dnotes', text: it.notes }) : null,
       detailActions(it, onClose)
     ];
@@ -4614,7 +4617,6 @@ var WORLD_WATER = [
         if (d.subject) rec.subject = d.subject;
         if (Array.isArray(d.movements)) rec.movements = d.movements.slice(0, 3);
         if (d.year && !rec.year) rec.year = d.year;
-        if (d.about && /^https:\/\/[a-z.]*wikipedia\.org\//.test(String(d.aboutUrl || ''))) { rec.about = norm(d.about).slice(0, 600); rec.aboutUrl = String(d.aboutUrl).slice(0, 300); }
         if (!rec.city && d.city) rec.city = d.city;
         if (!rec.country && d.country) rec.country = d.country;
         if (typeof rec.lat !== 'number' && d.lat != null && d.lng != null) { rec.lat = d.lat; rec.lng = d.lng; }
@@ -5732,8 +5734,6 @@ var WORLD_WATER = [
     };
     if (asDraft) it.draft = true;
     if (draftSubject) it.subject = draftSubject;
-    var ab = draft.about !== undefined ? draft.about : (existing && existing.about ? { text: existing.about, url: existing.aboutUrl } : null);
-    if (ab && ab.text) { it.about = ab.text; if (ab.url) it.aboutUrl = ab.url; }
     if (yearEstSrc && it.year === yearEstVal) it.yearEst = yearEstSrc;
     if (draftFav) it.favorite = true;
     var museumKey = it.museum.toLowerCase();
@@ -6343,7 +6343,7 @@ var WORLD_WATER = [
         note.textContent = sampleFn.wiki ? 'Couldn\u2019t find a sure match on Wikidata. Check the title and artist spelling.' : 'Couldn\u2019t identify it. Add the artist or a clearer photo.';
         return;
       }
-      var filled = 0, aboutAdded = false;
+      var filled = 0;
       var map = { artist: 'f-artist', year: 'f-year', medium: 'f-medium', museum: 'f-museum', city: 'f-city', country: 'f-country' };
       Object.keys(map).forEach(function (k) {
         var v = norm(data[k]).slice(0, 120);
@@ -6365,16 +6365,12 @@ var WORLD_WATER = [
         draft.autoCoords = { lat: la, lng: lo, museum: norm($('f-museum').value).toLowerCase() };
       }
       if (data.subject && SUBJECTS.indexOf(data.subject) >= 0 && !draftSubject) { draftSubject = data.subject; renderSubject(); moreSummary(); filled++; }
-      if (data.about && /^https:\/\/[a-z.]*wikipedia\.org\//.test(String(data.aboutUrl || ''))) {
-        draft.about = { text: norm(data.about).slice(0, 600), url: String(data.aboutUrl).slice(0, 300) };
-        aboutAdded = true; // the Wikipedia text is not a field on the page, so it is not counted below
-      }
       var newTitle = norm(data.title).slice(0, 160);
       var oldTitle = norm($('f-title').value);
       if (newTitle && newTitle.toLowerCase() !== oldTitle.toLowerCase()) { $('f-title').value = newTitle; if (!oldTitle) filled++; } // a title you already typed being tidied up is not a new field
-      note.textContent = filled ? 'Filled ' + filled + (filled === 1 ? ' field.' : ' fields.') + ' Check them over.' + (sampleFn.wiki ? ' Source: Wikidata.' : '') : (aboutAdded ? 'Added a short description.' : 'Nothing new to fill in.');
+      note.textContent = filled ? 'Filled ' + filled + (filled === 1 ? ' field.' : ' fields.') + ' Check them over.' + (sampleFn.wiki ? ' Source: Wikidata.' : '') : 'Nothing new to fill in.';
       syncPlaceUI();
-      if (filled || aboutAdded) { moreSummary(); scheduleSave(); }
+      if (filled) { moreSummary(); scheduleSave(); }
     } catch (err) {
       var code = err && err.code;
       if (code === 'not_granted' || code === 'sampling_disabled' || code === 'not_declared' || code === 'capability_disabled' || code === 'capability_removed') {
@@ -7422,7 +7418,6 @@ var WORLD_WATER = [
           country: norm(p.country).slice(0, 120), notes: norm(p.notes).slice(0, 4000),
           movements: movList(p).map(norm).filter(Boolean).slice(0, 10)
         };
-        if (norm(p.about)) { it.about = norm(p.about).slice(0, 600); if (/^https:\/\/[a-z.]*wikipedia\.org\//.test(String(p.aboutUrl || ''))) it.aboutUrl = String(p.aboutUrl).slice(0, 300); }
         if (SUBJECTS.indexOf(p.subject) >= 0) it.subject = p.subject;
         if (p.favorite === true) it.favorite = true;
         if (p.example === true) it.example = true;
@@ -7670,21 +7665,6 @@ var WORLD_WATER = [
     }
     data.movements = wdMovementNames(mvLabels);
     data.subject = wdSubject(genreIds.map(function (id) { return wdLabel(more[id]); }));
-    try {
-      var enTitle = e.sitelinks && e.sitelinks.enwiki && e.sitelinks.enwiki.title;
-      if (enTitle) {
-        var sr = await withTimeout(fetch('https://en.wikipedia.org/api/rest_v1/page/summary/' + encodeURIComponent(enTitle.replace(/ /g, '_'))), 8000);
-        if (sr.ok) {
-          var sj = await sr.json();
-          var ex = norm(sj.extract);
-          if (ex && sj.type !== 'disambiguation') {
-            if (ex.length > 420) { var cut = ex.slice(0, 420), dot = cut.lastIndexOf('. '); ex = dot > 120 ? cut.slice(0, dot + 1) : cut.replace(/\s+\S*$/, '') + '\u2026'; }
-            data.about = ex;
-            data.aboutUrl = (sj.content_urls && sj.content_urls.desktop && sj.content_urls.desktop.page) || ('https://en.wikipedia.org/wiki/' + encodeURIComponent(enTitle.replace(/ /g, '_')));
-          }
-        }
-      }
-    } catch (aboutErr) { /* the description is a bonus */ }
     var m = museumId ? more[museumId] : null;
     if (m) {
       data.museum = wdLabel(m);
