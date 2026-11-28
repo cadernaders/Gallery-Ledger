@@ -630,10 +630,10 @@ button, input, select, textarea { font: inherit; color: inherit; }
 /* Photo viewer */
 .viewer { position: fixed; inset: 0; z-index: 40; display: flex; flex-direction: column; background: var(--viewer-bg); color: var(--viewer-ink); padding-left: env(safe-area-inset-left, 0px); padding-right: env(safe-area-inset-right, 0px); }
 .viewer :focus-visible { outline-color: var(--viewer-ink); }
-.viewer-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: calc(14px + env(safe-area-inset-top, 0px)) 16px 8px; }
+.viewer-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: calc(11.5px + env(safe-area-inset-top, 0px)) 16px 8px; }
 .viewer-cap { min-width: 0; flex: 1; }
 .vinfo { display: flex; align-items: flex-end; justify-content: space-between; gap: 14px; width: 100%; }
-.vback { display: inline-flex; align-items: center; gap: 2px; height: 38px; padding: 0 14px 0 8px; border-radius: 999px; border: 1px solid var(--viewer-line); background: var(--viewer-chip); color: var(--viewer-ink); font: 600 15px/1 var(--font-body); cursor: pointer; }
+.vback { display: inline-flex; align-items: center; gap: 2px; height: 38px; padding: 0 14px 0 8px; border-radius: 999px; border: 0; box-shadow: 0 0 0 1px var(--viewer-line); background: var(--viewer-chip); color: var(--viewer-ink); font: inherit; font-size: 15px; font-weight: 600; cursor: pointer; }
 .vtopbtns { display: flex; gap: 8px; flex: none; }
 .viewer-cap h2 { font-family: var(--font-display); font-size: 20px; font-weight: 500; font-style: italic; line-height: 1.15; overflow-wrap: anywhere; }
 .viewer-cap p { font-size: 13px; color: var(--viewer-muted); margin-top: 2px; }
@@ -1469,7 +1469,7 @@ body.is-empty #stats { display: none; }
 .mvs { display: flex; flex-direction: column; gap: 12px; max-width: 560px; height: min(82vh, 680px); padding: 8px 18px 0; overflow: hidden; touch-action: pan-y; transition: transform .2s ease; }
 @supports (height: 1dvh) { .mvs { height: min(82dvh, 680px); } }
 .mvs > * { flex: none; }
-#mvSheet, #medSheet, #tlSheet { z-index: 30; }
+#mvSheet, #medSheet, #subSheet, #tlSheet { z-index: 30; }
 .tlsheet .mvs-body { display: block; padding: 4px 0 24px; }
 .tlsheet .mvs-body > * + * { margin-top: 12px; }
 .tlsheet .mv-card.panelonly { overflow: visible; border: 0; box-shadow: none; padding: 0; background: none; margin: 0; }
@@ -1563,8 +1563,8 @@ body.plan-open .addpop { z-index: 26; bottom: calc(env(safe-area-inset-bottom, 0
 #moreMenu:not([hidden]) { animation-duration: .15s; }
 .overlay.leaving, .viewer.leaving, .cropper.leaving { opacity: 0; pointer-events: none; transition: opacity .15s ease-in; }
 @keyframes sheetup { from { transform: translateY(36px); } to { transform: none; } }
-#tlSheet:not([hidden]) > .sheet, #medSheet:not([hidden]) > .sheet, #mvSheet:not([hidden]) > .sheet, #photosSheet:not([hidden]) > .sheet, #needSheet:not([hidden]) > .sheet, #delSheet:not([hidden]) > .sheet { animation: sheetup .26s cubic-bezier(.2, .7, .3, 1); }
-#tlSheet.leaving > .sheet, #medSheet.leaving > .sheet, #mvSheet.leaving > .sheet, #photosSheet.leaving > .sheet, #needSheet.leaving > .sheet, #delSheet.leaving > .sheet { transform: translateY(28px); transition: transform .15s ease-in; }
+#tlSheet:not([hidden]) > .sheet, #medSheet:not([hidden]) > .sheet, #subSheet:not([hidden]) > .sheet, #mvSheet:not([hidden]) > .sheet, #photosSheet:not([hidden]) > .sheet, #needSheet:not([hidden]) > .sheet, #delSheet:not([hidden]) > .sheet { animation: sheetup .26s cubic-bezier(.2, .7, .3, 1); }
+#tlSheet.leaving > .sheet, #medSheet.leaving > .sheet, #subSheet.leaving > .sheet, #mvSheet.leaving > .sheet, #photosSheet.leaving > .sheet, #needSheet.leaving > .sheet, #delSheet.leaving > .sheet { transform: translateY(28px); transition: transform .15s ease-in; }
 #photosSheet { z-index: 30; }
 #f-del { display: none !important; }
 #photoStrip { display: none !important; }
@@ -1740,7 +1740,7 @@ body.plan-open .addpop { z-index: 26; bottom: calc(env(safe-area-inset-bottom, 0
         <button type="button" class="btn" id="copyBackup">Copy</button>
       </div>
     </section>
-    <p class="buildline" id="buildLine">Version 2026-11-28 03:30</p>
+    <p class="buildline" id="buildLine">Version 2026-11-28 03:50</p>
       </div>
 </div>
 
@@ -1862,10 +1862,7 @@ body.plan-open .addpop { z-index: 26; bottom: calc(env(safe-area-inset-bottom, 0
             <button type="button" class="pick more" id="mvBtn" aria-haspopup="dialog">+ Add movement</button>
           </div>
         </div>
-        <div class="wp-row wp-stack" id="subField">
-          <span class="k">Subject</span>
-          <div class="pickrow" id="subRow" role="group" aria-label="Subject"></div>
-        </div>
+        <button type="button" class="wp-row wp-valrow" id="subValRow" aria-haspopup="dialog"><span class="k">Subject</span><span class="val" id="subVal"></span><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.5 6l6 6-6 6"/></svg></button>
         <label class="wp-row" for="f-location" id="locRow"><span class="k">Location</span>
           <input type="text" id="f-location" placeholder="New York, United States" autocomplete="off" autocorrect="off" spellcheck="false" autocapitalize="words">
         </label>
@@ -1904,6 +1901,19 @@ body.plan-open .addpop { z-index: 26; bottom: calc(env(safe-area-inset-bottom, 0
       </div></div>
     </div>
     <div class="mvs-foot"><button type="button" class="btn primary wp-done" id="medsDone">Done</button></div>
+  </div>
+</div>
+
+<div class="overlay" id="subSheet" hidden>
+  <div class="sheet mvs medsheet" role="dialog" aria-modal="true" aria-labelledby="subsTitle">
+    <div class="mvs-head">
+      <span class="mvs-grab" aria-hidden="true"></span>
+      <h3 id="subsTitle">Subject</h3>
+    </div>
+    <div class="mvs-body">
+      <div class="pickrow" id="subRow" role="group" aria-label="Subject"></div>
+    </div>
+    <div class="mvs-foot"><button type="button" class="btn primary wp-done" id="subsDone">Done</button></div>
   </div>
 </div>
 
@@ -2144,7 +2154,7 @@ var WORLD_WATER = [
      whenever the code shows or hides it, so no call site needs its own animation. A NEW overlay, sheet or viewer must be added
      to SOFT_LAYERS (and get its fade from the .overlay / .viewer rules in the CSS). Reading .hidden answers at once; only the
      real hiding waits for the fade (150 ms; keep it equal to the closing time in the CSS motion standard). */
-  var SOFT_LAYERS = ['moreOverlay', 'planOverlay', 'brOverlay', 'overlay', 'tlSheet', 'medSheet', 'mvSheet', 'moreMenu', 'photosSheet', 'needSheet', 'delSheet', 'viewer', 'cropper'];
+  var SOFT_LAYERS = ['moreOverlay', 'planOverlay', 'brOverlay', 'overlay', 'tlSheet', 'medSheet', 'subSheet', 'mvSheet', 'moreMenu', 'photosSheet', 'needSheet', 'delSheet', 'viewer', 'cropper'];
   (function () {
     var real = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'hidden');
     SOFT_LAYERS.forEach(function (id) {
@@ -5422,7 +5432,7 @@ var WORLD_WATER = [
   $('sortCap').addEventListener('click', function () { $('viewFab').click(); });
   // While a bottom sheet is open the page behind stays put, so a swipe can only move the sheet.
   (function () {
-    var ids = ['tlSheet', 'mvSheet', 'medSheet', 'photosSheet', 'needSheet', 'moreMenu', 'delSheet'], locked = false, lockY = 0;
+    var ids = ['tlSheet', 'mvSheet', 'medSheet', 'subSheet', 'photosSheet', 'needSheet', 'moreMenu', 'delSheet'], locked = false, lockY = 0;
     function sync() {
       var any = ids.some(function (id) { return !$(id).hidden; });
       var b = document.body;
@@ -5594,6 +5604,8 @@ var WORLD_WATER = [
   var draftSubject = '';
   function renderSubject() {
     var row = $('subRow');
+    $('subVal').textContent = draftSubject || 'Add subject';
+    $('subVal').classList.toggle('empty', !draftSubject);
     row.replaceChildren();
     SUBJECTS.forEach(function (n) {
       row.append(el('button', { type: 'button', class: 'pick', 'aria-pressed': String(draftSubject === n), onclick: function () {
@@ -5602,6 +5614,11 @@ var WORLD_WATER = [
       } }, n));
     });
   }
+  function closeSubSheet() { $('subSheet').hidden = true; $('subValRow').focus(); }
+  $('subValRow').addEventListener('click', function () { renderSubject(); $('subSheet').hidden = false; });
+  $('subsDone').addEventListener('click', closeSubSheet);
+  $('subSheet').addEventListener('mousedown', function (e) { if (e.target === $('subSheet')) closeSubSheet(); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !$('subSheet').hidden) { e.stopPropagation(); closeSubSheet(); } }, true);
   function moreSummary() {
     var bits = [norm($('f-medium').value), draftSubject].concat(draftMov.slice(0, 2), [norm($('f-city').value)]).filter(Boolean);
     $('moreHint').textContent = bits.length ? bits.join(' · ') : 'medium, subject, notes';
@@ -5784,7 +5801,7 @@ var WORLD_WATER = [
     draftMov = it ? movList(it).slice() : [];
     draftSubject = it && SUBJECTS.indexOf(it.subject) >= 0 ? it.subject : '';
     renderSubject();
-    $('mvSheet').hidden = true;
+    $('mvSheet').hidden = true; $('subSheet').hidden = true;
     $('mvAddForm').hidden = true;
     $('mvMsg').textContent = '';
     draftFav = !!(it && it.favorite);
@@ -6501,7 +6518,7 @@ var WORLD_WATER = [
       }
       return;
     }
-    if (e.key === 'Escape' && !$('overlay').hidden && $('mvSheet').hidden && $('delSheet').hidden && $('photosSheet').hidden && $('cropper').hidden && $('needSheet').hidden && $('moreMenu').hidden && $('medSheet').hidden) leaveSheet();
+    if (e.key === 'Escape' && !$('overlay').hidden && $('mvSheet').hidden && $('subSheet').hidden && $('delSheet').hidden && $('photosSheet').hidden && $('cropper').hidden && $('needSheet').hidden && $('moreMenu').hidden && $('medSheet').hidden) leaveSheet();
     else if (e.key === 'Escape' && !$('planOverlay').hidden) closePlan();
   });
 
