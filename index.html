@@ -1438,7 +1438,6 @@ body.is-empty .nv-row { display: none; }
 .nb-search-open .nb-search { clip-path: inset(0); visibility: visible; transition: clip-path .3s ease, visibility 0s; }
 .nb-pages-open .nb-main, .nb-search-open .nb-main { visibility: hidden; transition: visibility 0s .3s; }
 .nb-pages > .tab { flex: 1 1 0; }
-.nb-close svg { width: 22px; height: 22px; }
 .nb-sw { position: relative; flex: 1 1 auto; min-width: 0; }
 .nb-sw .search, .searchwrap.nb-sw input.search { height: 44px; border-radius: 22px; }
 .nb-cancel { flex: none; height: 44px; padding: 0 4px 0 10px; border: 0; background: none; font: inherit; font-size: 15px; font-weight: 500; color: var(--accent); cursor: pointer; }
@@ -1564,7 +1563,7 @@ body.is-empty .nb-view, body.is-empty .nb-find { display: none; }
         <button type="button" class="btn" id="copyBackup">Copy</button>
       </div>
     </section>
-    <p class="buildline" id="buildLine">Version 2026-11-28 13:20</p>
+    <p class="buildline" id="buildLine">Version 2026-11-28 13:40</p>
       </div>
 </div>
 
@@ -2079,16 +2078,17 @@ var WORLD_WATER = [
       return b;
     };
     pins.forEach(function (id) { box.append(mk(id)); });
-    var close = el('button', { type: 'button', class: 'tab nb-close', id: 'navClose', 'aria-label': 'Close' });
-    close.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>';
-    box.append(close);
   }
   function setNav(open) {
     $('tabbar').classList.toggle('nb-pages-open', open);
     $('navBtn').setAttribute('aria-expanded', String(open));
   }
   $('navBtn').addEventListener('click', function () { closePops(); setNav(true); });
-  $('navPages').addEventListener('click', function (e) { if (e.target.closest('#navClose')) setNav(false); });
+  // Tapping anywhere else closes the list too.
+  // That tap only closes the list; it does not also press whatever was underneath.
+  document.addEventListener('click', function (e) {
+    if ($('tabbar').classList.contains('nb-pages-open') && !e.target.closest('#navPages')) { e.preventDefault(); e.stopPropagation(); setNav(false); }
+  }, true);
   try { var cv = parseInt(localStorage.getItem('gallery-ledger-cols'), 10); if (cv >= 1 && cv <= 8) ui.cols = cv; } catch (e) { /* remembered setting unavailable */ }
   ui.msel = {};
   try { (JSON.parse(localStorage.getItem('gallery-ledger-msel') || '[]') || []).forEach(function (n) { ui.msel[n] = true; }); } catch (e) { /* remembered setting unavailable */ }
@@ -2397,8 +2397,6 @@ var WORLD_WATER = [
     closePops(); setNav(false);
     ui.sopen = true;
     renderFilters();
-    $('q').focus();
-    setTimeout(function () { if (document.activeElement !== $('q')) $('q').focus(); }, 320);
   }
   $('searchBtn').addEventListener('click', openSearch);
   $('searchCancel').addEventListener('click', function () {
