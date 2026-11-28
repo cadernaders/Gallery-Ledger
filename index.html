@@ -630,14 +630,14 @@ button, input, select, textarea { font: inherit; color: inherit; }
 /* Photo viewer */
 .viewer { position: fixed; inset: 0; z-index: 40; display: flex; flex-direction: column; background: var(--viewer-bg); color: var(--viewer-ink); padding-left: env(safe-area-inset-left, 0px); padding-right: env(safe-area-inset-right, 0px); }
 .viewer :focus-visible { outline-color: var(--viewer-ink); }
-.viewer-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: calc(12.5px + env(safe-area-inset-top, 0px)) 16px 8px; }
-.viewer-cap { min-width: 0; flex: 1; }
+.viewer-top { display: grid; grid-template-columns: 84px minmax(0, 1fr) 84px; align-items: center; gap: 8px; padding: calc(12.5px + env(safe-area-inset-top, 0px)) 16px 8px; }
+.viewer-cap { min-width: 0; text-align: center; }
 .vinfo { display: flex; align-items: flex-end; justify-content: space-between; gap: 14px; width: 100%; }
-.vback { display: inline-flex; align-items: center; gap: 2px; height: 38px; padding: 0 14px 0 8px; border-radius: 999px; border: 0; box-shadow: 0 0 0 1px var(--viewer-line); background: var(--viewer-chip); color: var(--viewer-ink); font: inherit; font-size: 15px; font-weight: 600; cursor: pointer; }
-.vacts { display: flex; align-items: center; gap: 8px; flex: none; }
+.vback { display: inline-flex; align-items: center; gap: 4px; height: 38px; padding: 0 16px 0 10px; line-height: 1; border-radius: 999px; border: 0; box-shadow: 0 0 0 1px var(--viewer-line); background: var(--viewer-chip); color: var(--viewer-ink); font: inherit; font-size: 15px; font-weight: 600; cursor: pointer; }
+.vacts { display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%; }
 .vacts .vbtn, .vacts .vpill { height: 40px; }
-.viewer-cap h2 { font-family: var(--font-display); font-size: 20px; font-weight: 500; font-style: italic; line-height: 1.15; overflow-wrap: anywhere; }
-.viewer-cap p { font-size: 13px; color: var(--viewer-muted); margin-top: 2px; }
+.viewer-cap h2 { font-family: var(--font-display); font-size: 16px; font-weight: 500; font-style: italic; line-height: 1.2; overflow-wrap: anywhere; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.viewer-cap p { font-size: 12px; color: var(--viewer-muted); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .stage { position: relative; flex: 1 1 auto; min-height: 0; overflow: hidden; touch-action: none; cursor: grab; user-select: none; -webkit-user-select: none; }
 .stage.dragging { cursor: grabbing; }
 .stage img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; transform-origin: 50% 50%; will-change: transform; pointer-events: none; -webkit-user-drag: none; }
@@ -1308,7 +1308,7 @@ body.is-empty #stats { display: none; }
 /* Browse a museum's notable works (prefix br-) */
 #brOverlay .sheet { max-width: none; max-height: none; height: 100%; border-radius: 0; padding: 0 max(18px, env(safe-area-inset-left, 0px)) calc(28px + env(safe-area-inset-bottom, 0px)); gap: 0; background: var(--bg); align-content: start; overflow-y: auto; }
 .br-head { position: relative; padding: 70px 0 14px; }
-.br-back { position: absolute; top: 14px; left: -6px; display: inline-flex; align-items: center; gap: 2px; height: 38px; padding: 0 14px 0 8px; border: 0; border-radius: 999px; background: var(--surface); color: var(--ink); font: inherit; font-size: 15px; font-weight: 600; cursor: pointer; box-shadow: 0 0 0 1px var(--line), 0 1px 4px rgba(0, 0, 0, .08); }
+.br-back { position: absolute; top: 14px; left: -6px; display: inline-flex; align-items: center; gap: 4px; height: 38px; padding: 0 16px 0 10px; line-height: 1; border: 0; border-radius: 999px; background: var(--surface); color: var(--ink); font: inherit; font-size: 15px; font-weight: 600; cursor: pointer; box-shadow: 0 0 0 1px var(--line), 0 1px 4px rgba(0, 0, 0, .08); }
 .br-head h2 { margin: 2px 0 4px; font-family: var(--font-display); font-weight: 400; font-size: 32px; }
 .br-search { width: 100%; box-sizing: border-box; height: 44px; margin-top: 14px; padding: 0 14px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); font: inherit; font-size: 16px; color: var(--ink); }
 .br-list { list-style: none; margin: 6px 0 0; padding: 0; display: grid; }
@@ -1335,7 +1335,7 @@ body.is-empty #stats { display: none; }
 .plan-hero::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0, 0, 0, .28) 0%, rgba(0, 0, 0, .12) 35%, rgba(0, 0, 0, .72) 100%); }
 .plan-hero > * { position: relative; z-index: 1; }
 .plan-hero .plan-collage { position: absolute; z-index: 0; }
-.plan-back { position: absolute; z-index: 2; top: 14px; left: max(14px, env(safe-area-inset-left, 0px)); display: inline-flex; align-items: center; gap: 2px; height: 38px; padding: 0 14px 0 8px; border: 0; border-radius: 999px; background: rgba(255, 255, 255, .88); color: #2a2622; font: inherit; font-size: 15px; font-weight: 600; cursor: pointer; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+.plan-back { position: absolute; z-index: 2; top: 14px; left: max(14px, env(safe-area-inset-left, 0px)); display: inline-flex; align-items: center; gap: 4px; height: 38px; padding: 0 16px 0 10px; line-height: 1; border: 0; border-radius: 999px; background: rgba(255, 255, 255, .88); color: #2a2622; font: inherit; font-size: 15px; font-weight: 600; cursor: pointer; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
 .plan-hero .plan-head { margin-top: 64px; }
 .plan-hero .plan-head h2 { font-size: 34px; color: #fff; text-shadow: 0 1px 12px rgba(0, 0, 0, .35); }
 .plan-hero .plan-head .country { color: rgba(255, 255, 255, .85); }
@@ -1353,13 +1353,16 @@ body.is-empty #stats { display: none; }
 #form.workpage::after { content: ""; flex: none; display: block; height: calc(120px + env(safe-area-inset-bottom, 0px)); }
 #form.workpage.nofoot::after { height: calc(28px + env(safe-area-inset-bottom, 0px)); }
 .wp-top { display: flex; align-items: center; gap: 10px; min-height: 40px; }
-.wp-back { display: inline-flex; align-items: center; gap: 2px; height: 38px; padding: 0 14px 0 8px; border: 0; border-radius: 999px; background: var(--surface); color: var(--ink); font: inherit; font-size: 15px; font-weight: 600; cursor: pointer; box-shadow: 0 0 0 1px var(--line), 0 1px 4px rgba(0, 0, 0, .08); }
+.wp-back { display: inline-flex; align-items: center; gap: 4px; height: 38px; padding: 0 16px 0 10px; line-height: 1; border: 0; border-radius: 999px; background: var(--surface); color: var(--ink); font: inherit; font-size: 15px; font-weight: 600; cursor: pointer; box-shadow: 0 0 0 1px var(--line), 0 1px 4px rgba(0, 0, 0, .08); }
 .wp-state { flex: 1; text-align: right; font-size: 13px; color: var(--muted); display: inline-flex; justify-content: flex-end; align-items: center; gap: 6px; transition: opacity .4s ease; min-width: 0; white-space: nowrap; }
 .wp-state:empty { display: none; }
 .wp-state[data-s="saved"]::before, .wp-state[data-s="draft"]::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: #3f7d6b; }
 .wp-state[data-s="error"], .wp-state[data-s="title"] { color: var(--danger); }
 .wp-state.quiet { opacity: .0; }
-.wp-top .headbtns { margin-left: auto; }
+.wp-top .wp-needbtn { margin-left: 0; }
+.workpage .foot-row { display: flex; align-items: center; gap: 10px; width: 100%; max-width: 528px; }
+.workpage .foot-row .headbtns .iconact { width: 50px; height: 50px; border-radius: 25px; box-shadow: 0 2px 8px rgba(0, 0, 0, .1); }
+.workpage .foot-row .wp-done { flex: 1; width: auto; min-width: 0; }
 .workpage .sheet-hero .herobtn { border-radius: 18px; }
 .workpage .herobtn:not(.empty) { padding: 26px 18px; }
 .workpage .herobtn img { max-height: 46vh; }
@@ -1741,7 +1744,7 @@ body.plan-open .addpop { z-index: 26; bottom: calc(env(safe-area-inset-bottom, 0
         <button type="button" class="btn" id="copyBackup">Copy</button>
       </div>
     </section>
-    <p class="buildline" id="buildLine">Version 2026-11-28 04:10</p>
+    <p class="buildline" id="buildLine">Version 2026-11-28 04:40</p>
       </div>
 </div>
 
@@ -1798,6 +1801,7 @@ body.plan-open .addpop { z-index: 26; bottom: calc(env(safe-area-inset-bottom, 0
     <div class="wp-top">
       <button type="button" class="wp-back" id="closeBtn" aria-label="Back"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.5 6 8.5 12l6 6"/></svg><span>Back</span></button>
       <span class="wp-state" id="saveState" role="status" aria-live="polite"></span>
+      <button type="button" class="wp-needbtn" id="needBtn" hidden aria-haspopup="dialog"></button>
       <div class="headbtns">
         <button type="button" class="iconact" id="f-photo" aria-label="More" title="More" aria-haspopup="menu" hidden><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><circle cx="5.5" cy="12" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="18.5" cy="12" r="1.7"/></svg></button>
         <button type="button" class="iconact" id="f-del" aria-label="Delete this work" title="Delete this work" hidden><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a1.5 1.5 0 0 0 1.5 1.4h7A1.5 1.5 0 0 0 17 19l1-12M9 7V4.5A.5.5 0 0 1 9.5 4h5a.5.5 0 0 1 .5.5V7"/></svg></button>
@@ -1822,7 +1826,6 @@ body.plan-open .addpop { z-index: 26; bottom: calc(env(safe-area-inset-bottom, 0
     <div class="wp-meta">
       <button type="button" class="wp-statusbtn want" id="statusBtn"></button>
       <label class="wp-seen" id="seenWrap" hidden><span id="seenText"></span><input type="date" id="f-date" aria-label="Date seen"></label>
-      <button type="button" class="wp-needbtn" id="needBtn" hidden aria-haspopup="dialog"></button>
     </div>
 
     <div class="wp-card">
@@ -2039,6 +2042,11 @@ body.plan-open .addpop { z-index: 26; bottom: calc(env(safe-area-inset-bottom, 0
 <div class="viewer" id="viewer" role="dialog" aria-modal="true" aria-labelledby="viewerTitle" hidden>
   <div class="viewer-top">
     <button type="button" class="vback" id="viewerClose" aria-label="Back"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.5 5l-7 7 7 7"/></svg>Back</button>
+    <div class="viewer-cap">
+      <h2 id="viewerTitle"></h2>
+      <p id="viewerSub"></p>
+    </div>
+    <span class="vspacer" aria-hidden="true"></span>
   </div>
   <div class="stage" id="stage">
     <img id="viewerImg" alt="" draggable="false">
@@ -2053,10 +2061,6 @@ body.plan-open .addpop { z-index: 26; bottom: calc(env(safe-area-inset-bottom, 0
       <button type="button" class="vbtn" id="vNext" aria-label="Next photo">&rsaquo;</button>
     </div>
     <div class="vinfo">
-      <div class="viewer-cap">
-        <h2 id="viewerTitle"></h2>
-        <p id="viewerSub"></p>
-      </div>
       <div class="vacts">
         <button type="button" class="vbtn" id="viewerFav" aria-pressed="false" aria-label="Favorite" title="Favorite" hidden><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.6l2.6 5.4 5.9.8-4.3 4.1 1.1 5.9L12 17l-5.3 2.8 1.1-5.9L3.5 9.8l5.9-.8z"/></svg></button>
         <button type="button" class="vpill" id="viewerDetails" aria-label="Details" hidden><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg><span>Details</span></button>
@@ -5485,11 +5489,12 @@ var WORLD_WATER = [
   var wizStep = null; // the step-by-step version is gone; this stays null so older code paths stay quiet
   function applyWizard() { renderFoot(); }
   function renderWizSum() { /* gone with the steps */ }
-  var finQueue = [];
+  var finQueue = [], footBtns = null;
   function renderFoot() {
     var foot = $('sheetFoot');
+    var hb = footBtns || (footBtns = document.querySelector('#form .headbtns'));
     foot.replaceChildren();
-    foot.append(el('p', { class: 'dupnote', id: 'dupNote', hidden: true }), el('button', { type: 'submit', class: 'btn primary wp-done', id: 'doneBtn' }));
+    foot.append(el('p', { class: 'dupnote', id: 'dupNote', hidden: true }), el('div', { class: 'foot-row' }, hb, el('button', { type: 'submit', class: 'btn primary wp-done', id: 'doneBtn' })));
     syncDoneLabel();
   }
   function syncDoneLabel() {
@@ -5513,6 +5518,27 @@ var WORLD_WATER = [
     if (t.scrollHeight) t.style.height = t.scrollHeight + 'px';
   }
   $('f-title').addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); e.target.blur(); } });
+  // Text copied from a museum site is often ALL CAPS or has line breaks; tidy it once you leave the field.
+  var SMALL_WORDS = /^(a|an|and|at|by|de|del|della|der|des|di|du|el|for|in|la|le|les|of|on|or|the|to|van|von|with)$/;
+  function tidyCaps(text) {
+    var t = norm(String(text).replace(/\s+/g, ' '));
+    if (t.length < 4 || t !== t.toUpperCase() || t === t.toLowerCase()) return t;
+    var first = true;
+    return t.toLowerCase().replace(/[a-z\u00c0-\u024f]+/g, function (w) {
+      var small = !first && SMALL_WORDS.test(w);
+      first = false;
+      return small ? w : w.charAt(0).toUpperCase() + w.slice(1);
+    });
+  }
+  ['f-title', 'f-artist'].forEach(function (id) {
+    var f = $(id);
+    f.addEventListener('paste', function () { setTimeout(function () { fitTitle(); }, 0); });
+    f.addEventListener('change', function () {
+      var v = tidyCaps(f.value);
+      if (v !== f.value) { f.value = v; f.dispatchEvent(new Event('input', { bubbles: true })); }
+      fitTitle();
+    });
+  });
   // Enter inside a field moves on to the next one. It never finishes the work; the Done button does that.
   $('form').addEventListener('keydown', function (e) {
     if (e.key !== 'Enter' || e.isComposing) return;
