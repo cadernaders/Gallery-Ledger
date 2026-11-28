@@ -170,8 +170,6 @@ button, input, select, textarea { font: inherit; color: inherit; }
 
 /* Ledger entries */
 .ledger { max-width: 760px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
-.dact { display: flex; align-items: center; gap: 8px; }
-.dact-btns { display: flex; gap: 8px; margin-left: auto; }
 .iconact { display: inline-grid; place-items: center; flex: none; width: 36px; height: 36px; padding: 0; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); color: var(--muted); cursor: pointer; }
 .iconact:hover { color: var(--ink); background: var(--surface-2); }
 .iconact[aria-pressed="true"] { color: var(--ochre); border-color: currentColor; }
@@ -188,19 +186,6 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .ph.hero img { position: static; display: block; width: 100%; height: auto; max-height: 250px; object-fit: contain; }
 .ph.hero.empty { display: grid; height: 120px; min-height: 0; }
 .tl-body .ph.hero img { max-height: 190px; }
-.dhead { display: grid; gap: 2px; min-width: 0; }
-.dtop { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
-.dtop .no { flex: none; }
-.dhead h3.title { font-family: var(--font-display); font-size: 26px; font-weight: 500; font-style: italic; line-height: 1.15; margin: 0; padding: 0; border: 0; overflow-wrap: anywhere; }
-.dchips { display: flex; flex-wrap: wrap; gap: 6px; }
-.dchip { padding: 3px 10px; border: 1px solid var(--line); border-radius: 999px; font-size: 12px; color: var(--muted); }
-.dfacts { display: grid; gap: 8px; }
-.dfact { display: flex; gap: 8px; align-items: flex-start; margin: 0; font-size: 14px; color: var(--muted); min-width: 0; }
-.dfact strong { color: var(--ink); font-weight: 600; }
-.dfact.unknown { font-style: italic; }
-.dfact .fact-ic { flex: none; display: inline-flex; margin-top: 2px; color: var(--accent); }
-.dfact .pin { margin-top: 0; }
-.dnotes { margin: 0; padding: 12px 14px; border-radius: 10px; background: var(--surface-2); font-size: 14px; line-height: 1.45; color: var(--ink); overflow-wrap: anywhere; white-space: pre-wrap; }
 .ledger > .entry:first-child { border-top: 0; }
 .no { font-family: var(--font-label); font-size: 12px; color: var(--muted); }
 
@@ -421,11 +406,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 @supports (height: 1dvh) { .sheet.wiz { height: min(90dvh, 740px); } }
 @keyframes stepin { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 @media (prefers-reduced-motion: reduce) { .sheet.wiz .step.on { animation: none; } }
-.wizbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: -2px 0 2px; }
 #f-del[hidden] { display: none; }
-.wizsum button { padding: 0; border: 0; background: none; cursor: zoom-in; flex: none; border-radius: 6px; }
-.wizsum { display: flex; align-items: center; gap: 12px; padding: 10px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface-2); min-width: 0; }
-.wizsum .ph.mini { width: 44px; height: 55px; border-radius: 6px; flex: none; }
 .wizdots { display: flex; gap: 6px; align-items: center; margin: -2px 0 2px; }
 .wizdots i { width: 7px; height: 7px; border-radius: 50%; background: var(--line); transition: width .18s, background .18s; }
 .wizdots i.done { background: var(--muted); }
@@ -1554,7 +1535,7 @@ body.plan-open .addpop { z-index: 26; bottom: calc(env(safe-area-inset-bottom, 0
         <button type="button" class="btn" id="copyBackup">Copy</button>
       </div>
     </section>
-    <p class="buildline" id="buildLine">Version 2026-11-28 06:20</p>
+    <p class="buildline" id="buildLine">Version 2026-11-28 06:40</p>
       </div>
 </div>
 
@@ -1618,8 +1599,6 @@ body.plan-open .addpop { z-index: 26; bottom: calc(env(safe-area-inset-bottom, 0
       </div>
     </div>
 
-    <div class="wizbar" id="wizBar" hidden><div class="wizdots" id="wizDots" role="img"></div></div>
-    <div class="wizsum" id="wizSum" hidden></div>
 
     <div class="photo-field" id="photoField" hidden>
       <div class="sheet-hero" id="sheetHero"></div>
@@ -2016,27 +1995,6 @@ var WORLD_WATER = [
     return e;
   }
 
-  function pinIcon() {
-    var ns = 'http://www.w3.org/2000/svg';
-    var s = document.createElementNS(ns, 'svg');
-    s.setAttribute('viewBox', '0 0 24 24');
-    s.setAttribute('width', '14');
-    s.setAttribute('height', '14');
-    s.setAttribute('aria-hidden', 'true');
-    s.setAttribute('class', 'pin');
-    var p = document.createElementNS(ns, 'path');
-    p.setAttribute('d', 'M12 21s-7-6.2-7-11a7 7 0 1 1 14 0c0 4.8-7 11-7 11z');
-    var c = document.createElementNS(ns, 'circle');
-    c.setAttribute('cx', '12'); c.setAttribute('cy', '10'); c.setAttribute('r', '2.5');
-    [p, c].forEach(function (n) {
-      n.setAttribute('fill', 'none');
-      n.setAttribute('stroke', 'currentColor');
-      n.setAttribute('stroke-width', '2');
-      n.setAttribute('stroke-linejoin', 'round');
-      s.appendChild(n);
-    });
-    return s;
-  }
 
   /* ---------- state ---------- */
   var items = [];       // finished works
@@ -2068,8 +2026,7 @@ var WORLD_WATER = [
   var saving = false;
   var ui = { fcent: '', fctry: '', fmus: '', fart: '', fmore: false, q: '', filter: 'all', view: 'gallery', sort: 'recent', asort: 'recent', msort: 'recent', details: false, moves: true, /* the Timeline always shows its movements panel */ mv: null, fmov: '', fmed: '', fsub: '', fav: false, fneed: false, fopen: false, mmed: '', mvkey: (function () { try { var k = localStorage.getItem('gallery-ledger-mvkey'); return k === null || k === '1'; } catch (e) { return true; } })(), mvopen: false, mvadd: false, mvedit: null, mvconfirm: null };
   try { ui.details = localStorage.getItem('gallery-ledger-details') === '1'; } catch (e) { /* remembered setting unavailable */ }
-  ui.thumbs = true; ui.open = {}; ui.ldetails = false;
-  try { ui.ldetails = localStorage.getItem('gallery-ledger-ldetails') === '1'; } catch (e) { /* remembered setting unavailable */ }
+  ui.thumbs = true; ui.open = {};
   try { ui.thumbs = localStorage.getItem('gallery-ledger-thumbs') !== '0'; } catch (e) { /* remembered setting unavailable */ }
   try { var vv = localStorage.getItem('gallery-ledger-view'); if (['gallery', 'list', 'artists', 'museums', 'timeline'].indexOf(vv) >= 0) ui.view = vv; } catch (e) { /* remembered setting unavailable */ }
   /* ---------- sections: every place in the app, four of which sit in the bottom bar ---------- */
@@ -2108,12 +2065,6 @@ var WORLD_WATER = [
     if (bc) return -parseInt(bc[1], 10);
     var m = t.match(/\d{3,4}/);
     return m ? parseInt(m[0], 10) : null;
-  }
-  function fmtDate(s) {
-    var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s || '');
-    if (!m) return norm(s);
-    var d = new Date(+m[1], +m[2] - 1, +m[3]);
-    return d.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
   }
   function today() {
     var d = new Date();
@@ -2157,7 +2108,6 @@ var WORLD_WATER = [
   }
   function needsInfo(it) { return !it.draft && missingInfo(it).length > 0; }
   function nextNo() { return items.reduce(function (m, i) { return Math.max(m, i.no || 0); }, 0) + 1; }
-  function pad(n) { return String(n || 0).padStart(3, '0'); }
 
   var toastTimer;
   function toast(msg) {
@@ -2673,94 +2623,9 @@ var WORLD_WATER = [
     }, photoEl(it, size));
   }
 
-  var SWAP_SVG = '<svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 4 3.5 7.5 7 11M3.5 7.5H18M17 13l3.5 3.5L17 20M20.5 16.5H6"/></svg>';
-  function statusPill(it) {
-    var seen = it.status === 'seen';
-    var b = el('button', {
-      type: 'button',
-      class: 'pill tap ' + (seen ? 'seen' : 'want'),
-      'aria-label': (seen ? 'Seen. Tap to change to want to see.' : 'Want to see. Tap to mark as seen.'),
-      onclick: function (e) { e.stopPropagation(); toggleStatus(it); }
-    }, el('span', { text: seen ? 'Seen' : 'Want to see' }));
-    var ic = el('span', { class: 'swap' }); ic.innerHTML = SWAP_SVG;
-    b.append(ic);
-    return b;
-  }
 
-  var EDIT_SVG = '<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19.5 8.5a2.1 2.1 0 0 0-3-3L5 17v3zM14.5 7.5l3 3"/></svg>';
-  var UP_SVG = '<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 15 6-6 6 6"/></svg>';
-  function iconAct(label, kids, onclick, pressed) {
-    var b = el('button', { type: 'button', class: 'iconact', 'aria-label': label, title: label, onclick: onclick });
-    if (pressed != null) b.setAttribute('aria-pressed', String(pressed));
-    kids.forEach(function (k) { if (typeof k === 'string') b.insertAdjacentHTML('beforeend', k); else b.append(k); });
-    return b;
-  }
-  /* The row of controls under every detail card: status on the left, fixed-size icon buttons on the right so nothing shifts when a state changes. */
-  function detailActions(it, onClose) {
-    return el('div', { class: 'dact' },
-      statusPill(it),
-      it.example ? el('span', { class: 'tag', text: 'Example' }) : null,
-      el('span', { class: 'dact-btns' },
-      iconAct(it.favorite ? 'Remove from favorites' : 'Add to favorites', [starIcon(!!it.favorite, 17)], function () { toggleFavorite(it); }, !!it.favorite),
-      iconAct('Edit', [EDIT_SVG], function () { openSheet(it); }),
-      onClose ? iconAct('Show less', [UP_SVG], onClose) : null));
-  }
-
-  var FACT_SEEN = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m8 12.5 3 3 5-6"/></svg>';
-  var FACT_TODO = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/></svg>';
-  function factRow(icon, kids, extra) {
-    var ic = el('span', { class: 'fact-ic' });
-    if (typeof icon === 'string') ic.innerHTML = icon; else ic.append(icon);
-    return el('p', { class: 'dfact' + (extra ? ' ' + extra : '') }, ic, el('span', null, kids));
-  }
-  function seenFact(it) {
-    // Always one row, so the card keeps the same height whichever way the status is switched.
-    var seen = it.status === 'seen';
-    var t = seen ? (norm(it.dateSeen) ? 'Seen on ' + fmtDate(it.dateSeen) : 'Seen') : 'Not seen yet';
-    return factRow(seen ? FACT_SEEN : FACT_TODO, t);
-  }
-
-  /* The one detail card, used by every view: photo, who/what, facts, notes, then the controls. */
-  function detailBody(it, onClose) {
-    var loc = placeLine(it);
-    var hero = photoButton(it, 'hero');
-    if (!it.photoId) hero.firstChild.classList.add('empty');
-    var meta = [it.medium, it.year].map(norm).filter(Boolean).join(' \u00b7 ');
-    var movs = movList(it);
-    return [
-      hero,
-      el('div', { class: 'dhead' },
-        el('div', { class: 'dtop' },
-          it.artist ? el('p', { class: 'artist', text: it.artist }) : el('span'),
-          el('span', { class: 'no', text: 'No. ' + pad(it.no) })),
-        el('h3', { class: 'title', text: it.title || 'Untitled' }),
-        meta ? el('p', { class: 'medium', text: meta }) : null),
-      (movs.length || it.subject) ? el('div', { class: 'dchips' }, (it.subject ? [el('span', { class: 'dchip', text: it.subject })] : []).concat(movs.map(function (m) { return el('span', { class: 'dchip', text: m }); }))) : null,
-      el('div', { class: 'dfacts' },
-        (it.museum || loc)
-          ? factRow(pinIcon(), [it.museum ? el('strong', { text: it.museum }) : null, it.museum && loc ? ', ' : null, loc])
-          : factRow(pinIcon(), 'Museum not set', 'unknown'),
-        seenFact(it)),
-      it.notes ? el('p', { class: 'dnotes', text: it.notes }) : null,
-      detailActions(it, onClose)
-    ];
-  }
-
-  function entry(it, onClose) {
-    return el('article', { class: 'entry' }, detailBody(it, onClose));
-  }
 
   /* After a card folds back into its row, bring that row back into view and flash it, so you never lose your place. */
-  function settleRow(node) {
-    var r = node.getBoundingClientRect();
-    if (r.top < 70 || r.bottom > window.innerHeight - 20) {
-      var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-      window.scrollTo({ top: Math.max(0, window.scrollY + r.top - window.innerHeight * 0.3), behavior: reduce ? 'auto' : 'smooth' });
-    }
-    node.classList.remove('flash');
-    void node.offsetWidth;
-    node.classList.add('flash');
-  }
 
   /* A work shown as a compact row; tapping its text opens it into the full detail card, in place. */
   // The quiet status control for list rows: a circle that fills when seen, with a tiny caption.
@@ -2784,7 +2649,6 @@ var WORLD_WATER = [
     // The quiet third line follows how the list is sorted: museum for museum or recent sorts, year and medium otherwise.
     var byPlace = ui.sort === 'museum' || ui.sort === 'recent' || ui.sort === 'added';
     var dline = ctx === 'd' ? (byPlace ? [it.museum, it.city] : [it.year, it.medium]).map(norm).filter(Boolean).join(' \u00b7 ') : '';
-    var dmv = ctx === 'd' ? movList(it).map(norm).filter(Boolean)[0] : null;
     var where = ctx === 'l' || ctx === 's' ? [it.museum, it.city].map(norm).filter(Boolean).join(' \u00b7 ') : '';
     function draw() {
       li.replaceChildren();
@@ -3287,23 +3151,13 @@ var WORLD_WATER = [
     var y = yearNum(it.year);
     var approx = /^\s*(c\.?|ca\.?|circa)\s*\d/i.test(String(it.year || ''));
     var loc = placeLine(it);
-    var key = 't:' + it.id;
     var body = el('div', { class: 'tl-body' });
-    function draw() {
-      body.replaceChildren();
-      body.classList.toggle('open', !!ui.open[key]);
-      if (!ui.open[key]) {
-        body.append(photoButton(it, 'mini'),
-          el('button', { type: 'button', class: 'mrowbody', onclick: function () { openSheet(it); } },
-            el('span', { class: 'mtext' },
-              el('span', { class: 'mt', text: it.title || 'Untitled' }),
-              el('span', { class: 'ma', text: norm(it.artist) }),
-              movTag(it))));
-        return;
-      }
-      body.append.apply(body, detailBody(it, function () { ui.open[key] = false; draw(); settleRow(body); }).filter(Boolean));
-    }
-    draw();
+    body.append(photoButton(it, 'mini'),
+      el('button', { type: 'button', class: 'mrowbody', onclick: function () { openSheet(it); } },
+        el('span', { class: 'mtext' },
+          el('span', { class: 'mt', text: it.title || 'Untitled' }),
+          el('span', { class: 'ma', text: norm(it.artist) }),
+          movTag(it))));
     return el('li', { class: 'tl-item' + (it.status === 'seen' ? '' : ' unseen'), 'data-wid': it.id },
       el('div', { class: 'tl-year' }, y == null ? null : el('span', null, approx ? el('span', { class: 'tl-c', text: 'c.' }) : null, String(y < 0 ? -y : y), y < 0 ? el('span', { class: 'tl-bc', text: 'BC' }) : null)),
       body);
@@ -4878,9 +4732,7 @@ var WORLD_WATER = [
   function visitCtx() { return !$('planOverlay').hidden && plan.museum ? { museum: plan.museum, city: plan.city, country: plan.country } : null; }
   var draftPlace = { museum: '', city: '', country: '' };
   try { localStorage.removeItem('gallery-ledger-draftplace'); } catch (e) { /* nothing to clear */ }
-  var placeOpen = false;
   var quickSeen = {};
-  var quickQueue = [], quickRun = { saved: 0, failed: 0, close: false, lastId: '' };
   function quickSave(files, closeAfter) {
     files = Array.prototype.slice.call(files || []);
     if (!files.length || !assets) return Promise.resolve();
