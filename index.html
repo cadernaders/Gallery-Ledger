@@ -1430,6 +1430,7 @@ body.in-gallery .nv-band { display: none; }
 .nv-dock.nv-float { position: fixed; top: calc(env(safe-area-inset-top, 0px) + 6px); right: auto; z-index: 12; }
 .nv-float .nv-sw { background: var(--surface); border-color: transparent; box-shadow: 0 4px 16px rgba(40, 30, 20, .16); }
 .nv-float .nv-cancel { background: var(--surface); border-radius: 22px; padding: 0 12px; box-shadow: 0 4px 16px rgba(40, 30, 20, .16); }
+.nv-dock.nv-leaving { opacity: 0; transition: opacity .22s ease .34s; }
 .nv-row.nv-open > #stats { transform: translateX(-110%); opacity: 0; pointer-events: none; }
 .nv-row.nv-open .nv-sw { right: 76px; width: calc(100% - 76px); border-color: transparent; cursor: default; overflow: visible; }
 .nv-row.nv-open .nv-sw svg { left: 14px !important; }
@@ -1572,7 +1573,7 @@ body.is-empty .nv-row { display: none; }
         <button type="button" class="btn" id="copyBackup">Copy</button>
       </div>
     </section>
-    <p class="buildline" id="buildLine">Version 2026-11-28 16:10</p>
+    <p class="buildline" id="buildLine">Version 2026-11-28 12:50</p>
       </div>
 </div>
 
@@ -2820,12 +2821,28 @@ var WORLD_WATER = [
   }
   // The magnifier lives in the pills row and scrolls away with it. While the search bar is open it stays pinned at the top
   // of the screen as you scroll, so you can keep searching; close it and it goes back to the row.
-  var navFloat = false;
+  var navFloat = false, navLeave = null;
+  function navRelease() {
+    var d = $('nvDock');
+    navLeave = null; navFloat = false;
+    d.classList.remove('nv-float', 'nv-leaving');
+    d.style.left = ''; d.style.width = '';
+  }
   function navPlace() {
     var row = $('nvRow'), d = $('nvDock');
     if (!row || !d || row.offsetParent === null) return;
     var r = row.getBoundingClientRect(), inset = parseFloat(getComputedStyle(document.documentElement).paddingTop) || 0;
-    var fl = row.classList.contains('nv-open') && r.top < inset + 6;
+    var open = row.classList.contains('nv-open');
+    // Closing while pinned: the row (and its magnifier) is off the top of the screen, so shrink the bar to a circle where it is,
+    // then fade it out, instead of snapping it away.
+    if (!open && navFloat) {
+      if (r.top >= inset + 6) { clearTimeout(navLeave); navRelease(); return; }
+      d.style.left = r.left + 'px'; d.style.width = r.width + 'px';
+      if (!navLeave) { d.classList.add('nv-leaving'); navLeave = setTimeout(navRelease, 560); }
+      return;
+    }
+    if (open && navLeave) { clearTimeout(navLeave); navLeave = null; d.classList.remove('nv-leaving'); }
+    var fl = open && r.top < inset + 6;
     if (fl !== navFloat) {
       navFloat = fl;
       d.classList.toggle('nv-float', fl);
