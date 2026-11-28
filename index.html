@@ -298,7 +298,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .favtoggle[aria-pressed="true"] { color: var(--ochre); border-color: var(--ochre); }
 .favtoggle svg { display: block; }
 #favFilter[aria-pressed="true"] svg { fill: currentColor; }
-#viewerFav { display: inline-flex; align-items: center; justify-content: center; padding: 0; width: 40px; min-width: 40px; border-radius: 999px; }
+#viewerFav { display: inline-flex; align-items: center; justify-content: center; padding: 0; width: 44px; min-width: 44px; border-radius: 999px; }
 #viewerFav[aria-pressed="true"] { color: #E3BD6A; border-color: #E3BD6A; }
 .filterbtn { position: relative; display: inline-flex; align-items: center; justify-content: center; height: 40px; width: 44px; box-sizing: border-box; padding: 0; font: inherit; font-size: 14px; font-weight: 500; color: var(--muted); background: var(--surface); border: 1px solid var(--line); border-radius: 8px; cursor: pointer; }
 .filterbtn[aria-pressed="true"], .filterbtn[aria-expanded="true"] { color: var(--ink); border-color: var(--accent); }
@@ -630,14 +630,14 @@ button, input, select, textarea { font: inherit; color: inherit; }
 /* Photo viewer */
 .viewer { position: fixed; inset: 0; z-index: 40; display: flex; flex-direction: column; background: var(--viewer-bg); color: var(--viewer-ink); padding-left: env(safe-area-inset-left, 0px); padding-right: env(safe-area-inset-right, 0px); }
 .viewer :focus-visible { outline-color: var(--viewer-ink); }
-.viewer-top { display: grid; grid-template-columns: 84px minmax(0, 1fr) 84px; align-items: center; gap: 8px; padding: calc(12.5px + env(safe-area-inset-top, 0px)) 16px 8px; }
-.viewer-cap { min-width: 0; text-align: center; }
-.vinfo { display: flex; align-items: flex-end; justify-content: space-between; gap: 14px; width: 100%; }
+.viewer-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: calc(12.5px + env(safe-area-inset-top, 0px)) 16px 8px; }
+.viewer-cap { min-width: 0; text-align: left; padding: 0 2px; }
+.vinfo { display: flex; flex-direction: column; align-items: stretch; gap: 12px; width: 100%; }
 .vback { display: inline-flex; align-items: center; gap: 4px; height: 38px; padding: 0 16px 0 10px; line-height: 1; border-radius: 999px; border: 0; box-shadow: 0 0 0 1px var(--viewer-line); background: var(--viewer-chip); color: var(--viewer-ink); font: inherit; font-size: 15px; font-weight: 600; cursor: pointer; }
 .vacts { display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%; }
-.vacts .vbtn, .vacts .vpill { height: 40px; }
-.viewer-cap h2 { font-family: var(--font-display); font-size: 16px; font-weight: 500; font-style: italic; line-height: 1.2; overflow-wrap: anywhere; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-.viewer-cap p { font-size: 12px; color: var(--viewer-muted); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.vacts .vbtn, .vacts .vpill { height: 44px; }
+.viewer-cap h2 { font-family: var(--font-display); font-size: 20px; font-weight: 500; font-style: italic; line-height: 1.15; overflow-wrap: anywhere; }
+.viewer-cap p { font-size: 13px; color: var(--viewer-muted); margin-top: 2px; }
 .stage { position: relative; flex: 1 1 auto; min-height: 0; overflow: hidden; touch-action: none; cursor: grab; user-select: none; -webkit-user-select: none; }
 .stage.dragging { cursor: grabbing; }
 .stage img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; transform-origin: 50% 50%; will-change: transform; pointer-events: none; -webkit-user-drag: none; }
@@ -1360,8 +1360,8 @@ body.is-empty #stats { display: none; }
 .wp-state[data-s="error"], .wp-state[data-s="title"] { color: var(--danger); }
 .wp-state.quiet { opacity: .0; }
 .wp-top .wp-needbtn { margin-left: 0; }
-.workpage .foot-row { display: flex; align-items: center; gap: 10px; width: 100%; max-width: 528px; }
-.workpage .foot-row .headbtns .iconact { width: 50px; height: 50px; border-radius: 25px; box-shadow: 0 2px 8px rgba(0, 0, 0, .1); }
+.workpage .foot-row { display: flex; align-items: flex-end; gap: 10px; width: 100%; max-width: 528px; }
+.workpage .foot-row .headbtns .iconact { width: 44px; height: 44px; border-radius: 22px; box-shadow: 0 2px 8px rgba(0, 0, 0, .1); }
 .workpage .foot-row .wp-done { flex: 1; width: auto; min-width: 0; }
 .workpage .sheet-hero .herobtn { border-radius: 18px; }
 .workpage .herobtn:not(.empty) { padding: 26px 18px; }
@@ -1744,7 +1744,7 @@ body.plan-open .addpop { z-index: 26; bottom: calc(env(safe-area-inset-bottom, 0
         <button type="button" class="btn" id="copyBackup">Copy</button>
       </div>
     </section>
-    <p class="buildline" id="buildLine">Version 2026-11-28 04:40</p>
+    <p class="buildline" id="buildLine">Version 2026-11-28 05:00</p>
       </div>
 </div>
 
@@ -1803,9 +1803,9 @@ body.plan-open .addpop { z-index: 26; bottom: calc(env(safe-area-inset-bottom, 0
       <span class="wp-state" id="saveState" role="status" aria-live="polite"></span>
       <button type="button" class="wp-needbtn" id="needBtn" hidden aria-haspopup="dialog"></button>
       <div class="headbtns">
+        <button type="button" class="iconact" id="f-fav" aria-pressed="false" aria-label="Add to favorites" title="Add to favorites"><span id="f-fav-icon"></span></button>
         <button type="button" class="iconact" id="f-photo" aria-label="More" title="More" aria-haspopup="menu" hidden><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><circle cx="5.5" cy="12" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="18.5" cy="12" r="1.7"/></svg></button>
         <button type="button" class="iconact" id="f-del" aria-label="Delete this work" title="Delete this work" hidden><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a1.5 1.5 0 0 0 1.5 1.4h7A1.5 1.5 0 0 0 17 19l1-12M9 7V4.5A.5.5 0 0 1 9.5 4h5a.5.5 0 0 1 .5.5V7"/></svg></button>
-        <button type="button" class="iconact" id="f-fav" aria-pressed="false" aria-label="Add to favorites" title="Add to favorites"><span id="f-fav-icon"></span></button>
       </div>
     </div>
 
@@ -2042,11 +2042,6 @@ body.plan-open .addpop { z-index: 26; bottom: calc(env(safe-area-inset-bottom, 0
 <div class="viewer" id="viewer" role="dialog" aria-modal="true" aria-labelledby="viewerTitle" hidden>
   <div class="viewer-top">
     <button type="button" class="vback" id="viewerClose" aria-label="Back"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.5 5l-7 7 7 7"/></svg>Back</button>
-    <div class="viewer-cap">
-      <h2 id="viewerTitle"></h2>
-      <p id="viewerSub"></p>
-    </div>
-    <span class="vspacer" aria-hidden="true"></span>
   </div>
   <div class="stage" id="stage">
     <img id="viewerImg" alt="" draggable="false">
@@ -2061,6 +2056,10 @@ body.plan-open .addpop { z-index: 26; bottom: calc(env(safe-area-inset-bottom, 0
       <button type="button" class="vbtn" id="vNext" aria-label="Next photo">&rsaquo;</button>
     </div>
     <div class="vinfo">
+      <div class="viewer-cap">
+        <h2 id="viewerTitle"></h2>
+        <p id="viewerSub"></p>
+      </div>
       <div class="vacts">
         <button type="button" class="vbtn" id="viewerFav" aria-pressed="false" aria-label="Favorite" title="Favorite" hidden><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.6l2.6 5.4 5.9.8-4.3 4.1 1.1 5.9L12 17l-5.3 2.8 1.1-5.9L3.5 9.8l5.9-.8z"/></svg></button>
         <button type="button" class="vpill" id="viewerDetails" aria-label="Details" hidden><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg><span>Details</span></button>
@@ -4913,7 +4912,7 @@ var WORLD_WATER = [
   var draftFav = false;
   function syncFormFav() {
     $('f-fav').setAttribute('aria-pressed', String(draftFav));
-    $('f-fav-icon').replaceChildren(starIcon(draftFav, 17));
+    $('f-fav-icon').replaceChildren(starIcon(draftFav, 20));
     var favLabel = draftFav ? 'Remove from favorites' : 'Add to favorites';
     $('f-fav').setAttribute('aria-label', favLabel);
     $('f-fav').title = favLabel;
@@ -5947,8 +5946,10 @@ var WORLD_WATER = [
     $('mmSep').hidden = !canDel || ($('mmAdd').hidden && $('mmManage').hidden);
     var r = $('f-photo').getBoundingClientRect(), m = $('popmenu');
     $('moreMenu').hidden = false;
-    m.style.top = (r.bottom + 6) + 'px';
-    m.style.left = Math.max(8, Math.min(window.innerWidth - m.offsetWidth - 8, r.right - m.offsetWidth)) + 'px';
+    // The button now sits at the bottom of the page, so the menu opens upward when there is no room below.
+    var below = r.bottom + 6, top = below + m.offsetHeight > window.innerHeight - 8 ? Math.max(8, r.top - 6 - m.offsetHeight) : below;
+    m.style.top = top + 'px';
+    m.style.left = Math.max(8, Math.min(window.innerWidth - m.offsetWidth - 8, r.left)) + 'px';
     var first = m.querySelector('button:not([hidden])'); if (first) first.focus();
   }
   $('f-photo').addEventListener('click', openPhotoMenu);
@@ -6186,9 +6187,10 @@ var WORLD_WATER = [
     if (RECOG.m) return;
     var T = await import(RECOG_LIB);
     T.env.allowLocalModels = false;
-    var files = {};
+    var files = {}, had = false;
+    try { had = localStorage.getItem('gallery-ledger-recog-dl') === '1'; } catch (e) { /* fine */ }
     var cb = function (p) {
-      if (!p || p.status !== 'progress' || !p.total) return;
+      if (had || !p || p.status !== 'progress' || !p.total) return; // already downloaded once: it loads from the phone, so no download message
       files[p.file] = { l: p.loaded, t: p.total };
       var l = 0, t = 0; Object.keys(files).forEach(function (k) { l += files[k].l; t += files[k].t; });
       if (t) note.textContent = 'Downloading the recogniser, one time only\u2026 ' + Math.min(99, Math.round(l / t * 100)) + '%';
