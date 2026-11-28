@@ -1431,8 +1431,12 @@ body.is-empty .nv-row { display: none; }
 .nb-nav svg, .nb-find svg, .nb-view svg { width: 26px; height: 26px; }
 .nb-view[aria-expanded="true"] { color: var(--accent); }
 .nb-view[aria-expanded="true"] svg { background: color-mix(in srgb, var(--accent) 14%, transparent); border-radius: 10px; box-sizing: content-box; padding: 6px 18px; margin: -6px -18px; }
-.nb-main { transition: opacity .2s ease .1s; }
-.nb-pages-open .nb-main, .nb-search-open .nb-main { opacity: 0; pointer-events: none; visibility: hidden; transition: opacity .16s ease, visibility 0s .16s; }
+/* The other buttons are pushed off the side together (Pages open: to the right; Search open: to the left) and come back on the same clock. */
+.nb-main { transition: transform .4s cubic-bezier(.4, 0, .2, 1), opacity .3s ease; }
+.nb-pages-open .tabquick, .nb-pages-open .nb-view, .nb-pages-open .nb-find { transform: translateX(300%); opacity: 0; pointer-events: none; visibility: hidden; transition: transform .4s cubic-bezier(.4, 0, .2, 1), opacity .3s ease, visibility 0s .4s; }
+.nb-pages-open .nb-nav { opacity: 0; visibility: hidden; transition: none; }
+.nb-pages-closing .nb-nav { transition: opacity 0s .32s; }
+.nb-search-open .nb-nav, .nb-search-open .tabquick, .nb-search-open .nb-view { transform: translateX(-300%); opacity: 0; pointer-events: none; visibility: hidden; transition: transform .4s cubic-bezier(.4, 0, .2, 1), opacity .3s ease, visibility 0s .4s; }
 /* Pages: the pages come out of the Pages icon (far left) and slide to their places; closing sends them back into it. */
 .nb-pages { position: absolute; inset: 0; display: flex; align-items: center; visibility: hidden; pointer-events: none; transition: visibility 0s .32s; }
 .nb-pages > .tab { flex: 1 1 0; opacity: 0; transform: translateX(calc(var(--i, 0) * -100%)); transition: transform .3s cubic-bezier(.4, 0, .2, 1), opacity .2s ease; }
@@ -1440,17 +1444,18 @@ body.is-empty .nv-row { display: none; }
 .nb-pages > .tab:nth-child(2) { --i: 1; }
 .nb-pages > .tab:nth-child(3) { --i: 2; }
 .nb-pages > .tab:nth-child(4) { --i: 3; }
-.nb-pages > .tab:nth-child(1) { opacity: 1; }
+.nb-pages > .tab:nth-child(1), .nb-pages > .tab.nb-chosen { opacity: 1; }
+.nb-pages > .tab.nb-chosen { z-index: 2; }
+.nb-pages .tab svg { transition: background-color .18s ease; }
+.tabbar:not(.nb-pages-open) .nb-pages .tab svg { background-color: transparent; }
 .nb-pages-open .nb-pages { visibility: visible; pointer-events: auto; transition: none; }
-.nb-nav { transition: opacity 0s .32s; }
-.nb-pages-open .nb-nav { opacity: 0; visibility: hidden; transition: none; }
 .nb-pages-open .nb-pages > .tab { opacity: 1; transform: none; transition: transform .4s cubic-bezier(.3, .7, .2, 1), opacity .25s ease; }
 .nb-pages-open .nb-pages > .tab:nth-child(2) { transition-delay: .03s; }
 .nb-pages-open .nb-pages > .tab:nth-child(3) { transition-delay: .06s; }
 .nb-pages-open .nb-pages > .tab:nth-child(4) { transition-delay: .09s; }
 /* Search: no panel. The field is the magnifier button itself: it grows a rim and stretches to the left, the other buttons fade. */
 .nb-search-open .nb-find { opacity: 0; transition: none; }
-.nb-find { transition: opacity 0s .42s; }
+.nb-search-closing .nb-find { transition: opacity 0s .42s; }
 .nb-search { position: absolute; inset: 0; overflow: hidden; visibility: hidden; pointer-events: none; transition: visibility 0s .42s; }
 .nb-search-open .nb-search { visibility: visible; pointer-events: none; transition: none; }
 .searchwrap.nb-sw { position: absolute; top: 50%; margin-top: -22px; height: 44px; box-sizing: border-box; left: calc(87.5% - 22px); right: calc(12.5% - 22px); border: 1px solid transparent; border-radius: 22px; background: transparent; transition: left .4s cubic-bezier(.4, 0, .2, 1), right .4s cubic-bezier(.4, 0, .2, 1), border-color .2s ease .22s, background-color .2s ease .22s, box-shadow .15s ease; }
@@ -1592,7 +1597,7 @@ body.is-empty .nb-view, body.is-empty .nb-find { display: none; }
         <button type="button" class="btn" id="copyBackup">Copy</button>
       </div>
     </section>
-    <p class="buildline" id="buildLine">Version 2026-11-28 17:25</p>
+    <p class="buildline" id="buildLine">Version 2026-11-28 17:50</p>
       </div>
 </div>
 
@@ -2127,8 +2132,23 @@ var WORLD_WATER = [
       hapticLabel.click();
     } catch (e) { /* no haptics on this phone: fine */ }
   }
-  function setNav(open) {
-    $('tabbar').classList.toggle('nb-pages-open', open);
+  // Closing the list: the page you pressed (or, if you just tapped away, the page you are on) slides into the first slot and becomes the Pages icon.
+  var navClosingT = null;
+  function setNav(open, chosen) {
+    var bar = $('tabbar');
+    if (!open && bar.classList.contains('nb-pages-open')) {
+      var here = ui.view === 'list' ? 'gallery' : ui.view === 'map' ? 'museums' : ui.view;
+      var pick = chosen || $('navPages').querySelector('.tab[data-view="' + here + '"]');
+      $('navPages').querySelectorAll('.tab').forEach(function (t) { t.classList.remove('nb-chosen'); });
+      if (pick) pick.classList.add('nb-chosen');
+      bar.classList.add('nb-pages-closing');
+      clearTimeout(navClosingT);
+      navClosingT = setTimeout(function () {
+        bar.classList.remove('nb-pages-closing');
+        $('navPages').querySelectorAll('.tab').forEach(function (t) { t.classList.remove('nb-chosen'); });
+      }, 480);
+    }
+    bar.classList.toggle('nb-pages-open', open);
     $('navBtn').setAttribute('aria-expanded', String(open));
   }
   $('navBtn').addEventListener('click', function () { haptic(); closePops(); setNav(true); });
@@ -2437,8 +2457,15 @@ var WORLD_WATER = [
     setSearchShown(ui.sopen || !!ui.q || ui.fopen);
     document.querySelector('.controls').classList.toggle('collapsed', !(ui.fopen || others > 0));
   }
+  var searchClosingT = null;
   function setSearchShown(show) {
-    $('tabbar').classList.toggle('nb-search-open', !!show);
+    var bar = $('tabbar');
+    if (!show && bar.classList.contains('nb-search-open')) {
+      bar.classList.add('nb-search-closing');
+      clearTimeout(searchClosingT);
+      searchClosingT = setTimeout(function () { bar.classList.remove('nb-search-closing'); }, 480);
+    }
+    bar.classList.toggle('nb-search-open', !!show);
     $('searchBtn').setAttribute('aria-expanded', String(!!show));
   }
   function openSearch() {
@@ -6489,7 +6516,7 @@ var WORLD_WATER = [
     }, 150);
   }
   document.querySelectorAll('[data-view]:not(.tab)').forEach(function (b) { b.addEventListener('click', function () { goView(b); }); });
-  $('tabbar').addEventListener('click', function (e) { var b = e.target.closest('.tab[data-view]'); if (b) { haptic(); goView(b); setNav(false); } });
+  $('tabbar').addEventListener('click', function (e) { var b = e.target.closest('.tab[data-view]'); if (b) { haptic(); goView(b); setNav(false, b); } });
   buildTabs();
   $('colsBtn').addEventListener('click', function () {
     var opts = wallOptions(), cur = wallCols();
