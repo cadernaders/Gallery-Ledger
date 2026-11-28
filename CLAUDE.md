@@ -47,6 +47,8 @@ The app must work fully with no AI and no running costs (this is the case today:
 ## Parked ideas
 Install-as-an-app guide slide; app rename (the owner likes "Placard"); a Room field and Met/Chicago museum connectors (advised against broad connectors); artist birth/death years; photo for works added from Notable works (Wikimedia Commons image, public-domain only, test on the phone first); real iCloud backup.
 
+About page (not built; owner chose this wording for it): "Gallery Ledger keeps a quiet record of the art you've seen. The paintings take centre stage, and the app stays out of their way." Short tagline version: "The art comes first. Everything else stays quiet."
+
 ## How we work
 1. Recommend, build, test, commit, push, then tell the owner in a few plain lines what changed and what could not be tested on their phone.
 2. Bump the version stamp (`Version YYYY-MM-DD HH:MM`, shown in the ⋯ menu as `#buildLine`) on every pushed change so the owner can tell the update arrived.
