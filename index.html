@@ -1439,15 +1439,18 @@ body.is-empty .nv-row { display: none; }
 .nb-search-open .nb-nav, .nb-search-open .tabquick, .nb-search-open .nb-view { transform: translateX(-300%); opacity: 0; pointer-events: none; visibility: hidden; transition: transform .4s cubic-bezier(.4, 0, .2, 1), opacity .3s ease, visibility 0s .4s; }
 /* Pages: the pages come out of the Pages icon (far left) and slide to their places; closing sends them back into it. */
 .nb-pages { position: absolute; inset: 0; display: flex; align-items: center; visibility: hidden; pointer-events: none; transition: visibility 0s .32s; }
-.nb-pages > .tab { flex: 1 1 0; opacity: 0; transform: translateX(calc(var(--i, 0) * -100%)); transition: transform .3s cubic-bezier(.4, 0, .2, 1), opacity .2s ease; }
+.nb-pages > .tab { flex: 1 1 0; opacity: 0; transform: translateX(calc(var(--i, 0) * -100%)); transition: transform .3s cubic-bezier(.4, 0, .2, 1), opacity .1s ease, color .28s ease; }
 .nb-pages > .tab:nth-child(1) { --i: 0; }
 .nb-pages > .tab:nth-child(2) { --i: 1; }
 .nb-pages > .tab:nth-child(3) { --i: 2; }
 .nb-pages > .tab:nth-child(4) { --i: 3; }
 .nb-pages > .tab:nth-child(1), .nb-pages > .tab.nb-chosen { opacity: 1; }
 .nb-pages > .tab.nb-chosen { z-index: 2; }
+/* the page you leave fades first, so the chosen one glides into an empty slot with nothing underneath it */
+.nb-pages-closing .nb-pages > .tab:nth-child(1):not(.nb-chosen) { opacity: 0; transition: opacity .1s ease; }
 .nb-pages .tab svg { transition: background-color .18s ease; }
 .tabbar:not(.nb-pages-open) .nb-pages .tab svg { background-color: transparent; }
+.tabbar:not(.nb-pages-open) .nb-pages .tab { color: var(--muted); }
 .nb-pages-open .nb-pages { visibility: visible; pointer-events: auto; transition: none; }
 .nb-pages-open .nb-pages > .tab { opacity: 1; transform: none; transition: transform .4s cubic-bezier(.3, .7, .2, 1), opacity .25s ease; }
 .nb-pages-open .nb-pages > .tab:nth-child(2) { transition-delay: .03s; }
@@ -1597,7 +1600,7 @@ body.is-empty .nb-view, body.is-empty .nb-find { display: none; }
         <button type="button" class="btn" id="copyBackup">Copy</button>
       </div>
     </section>
-    <p class="buildline" id="buildLine">Version 2026-11-28 17:50</p>
+    <p class="buildline" id="buildLine">Version 2026-11-28 18:10</p>
       </div>
 </div>
 
