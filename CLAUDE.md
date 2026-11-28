@@ -9,17 +9,18 @@ A personal art catalogue for one person on an iPhone, installed from https://cad
 - `index.html`: the whole app (HTML, CSS, JS in one file, no build step). Photos are in the phone's IndexedDB; works are in localStorage (`gallery-ledger-paintings`).
 - `sw.js`: service worker. Network-first for same-origin GETs, and serves stored photos at `_blob/<id>`.
 - `manifest.webmanifest` and the `icon-*.png` files: the installed-app bits.
-- `data/paintings.json` and `data/paintings.bin`: the photo-recognition index (5030 works; one int8 vector of 512 numbers per work). Built by `tools/build_index.py` through the GitHub Action `.github/workflows/build-index.yml` (run it by hand with the `max_works` input). Artist names that are only Wikidata ids (like Q155626) are blanked.
+- `data/paintings.json` and `data/paintings.bin`: the photo-recognition index (8,409 works at last count; one int8 vector of 512 numbers per work). Built by `tools/build_index.py` through the GitHub Action `.github/workflows/build-index.yml` (run it by hand with the `max_works` input). Artist names that are only Wikidata ids (like Q155626) are blanked.
 
 ## How the script is laid out (search for these headers in `index.html`)
 state, sections, helpers, storage, filtering and sorting, rendering, favourites, actions, sheet (the edit page), museum label (placard) scanning, photo viewer, map, backup and restore, backup bookkeeping, Wikidata lookup, host services, on-device photo storage, start.
-CSS uses a prefix per feature: `ts-` tour scenes, `br-` Browse a museum's notable works, `v…` and `tap-hint` photo viewer, `recog-` recognition, `wp-` the edit page. New CSS gets its own prefix.
+CSS uses a prefix per feature: `ts-` tour scenes, `br-` Browse a museum's notable works, `v…` and `tap-hint` photo viewer, `recog-` recognition, `wp-` the edit page, `nb-` the bottom bar, `nv-` the totals row at the top and the status-bar strip. New CSS gets its own prefix.
 
 ## Standards we agreed on (keep every screen to these)
 - **Back** goes to the page you were just on. **Done** (also Add to gallery, Save and next, Delete) closes the screen and goes to the main page, never back to the viewer. Back buttons are the same size, shape and position everywhere (`.wp-back`, `.vback`, `.br-back`); only the colours match their page. Check with the viewer and edit page: both Back buttons must measure the same.
 - **Favourite star**: a 44px circle at the bottom left, identical position on the viewer and the edit page. On the edit page the order along the bottom is star, ⋯, then Done.
 - **Viewer**: Back top left, title and artist top right (20px italic), star bottom left, Details bottom right. Tapping the photo hides all the chrome.
 - **Edit page**: top has Back and, right of it, "N to add". The row under the photo has "N to add" on the left and the To see / Seen pill always on the right.
+- **Bottom bar** (`#tabbar`): four equal buttons, left to right: Pages (`#navBtn`, shows the current page's icon), Add (`#quickBtn`), View options (`#viewFab`), Search (`#searchBtn`). Pages opens to the right over the bar (`#navPages`: Gallery, Timeline, Artists, Museums, ✕) and Search opens to the left (`#nbSearch`: field, filter button, Cancel). Both are overlays revealed with `clip-path`, toggled by the classes `nb-pages-open` and `nb-search-open`. Search is never at the top, so it is always in reach; the filter button scrolls to the top where the filter panel sits. When the keyboard is up, the bar is lifted with `visualViewport` (could not be tested on a real phone from the sandbox). The Drafts button is still a small floating circle, shown only when drafts exist. The status-bar strip (`.nv-band`) shows on every page except the gallery (`body.in-gallery`).
 - **Subject**, **Medium** and **Movement** are rows that open a bottom sheet with the same look.
 - Motion is soft: layers listed in `SOFT_LAYERS` fade; add new overlays to that list.
 - Wording is plain and human. A work is "missing" something if photo, title, artist, year, medium, movement, subject, museum, or city and country are empty (`missingInfo`).
