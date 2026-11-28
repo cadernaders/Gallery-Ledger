@@ -1535,7 +1535,7 @@ body.plan-open .addpop { z-index: 26; bottom: calc(env(safe-area-inset-bottom, 0
         <button type="button" class="btn" id="copyBackup">Copy</button>
       </div>
     </section>
-    <p class="buildline" id="buildLine">Version 2026-11-28 07:10</p>
+    <p class="buildline" id="buildLine">Version 2026-11-28 07:40</p>
       </div>
 </div>
 
@@ -5418,6 +5418,7 @@ var WORLD_WATER = [
     draftSubject = it && SUBJECTS.indexOf(it.subject) >= 0 ? it.subject : '';
     renderSubject();
     $('mvSheet').hidden = true; $('subSheet').hidden = true;
+    $('recogOut').hidden = true; $('recogOut').replaceChildren(); // never show last time's guesses
     $('mvAddForm').hidden = true;
     $('mvMsg').textContent = '';
     draftFav = !!(it && it.favorite);
@@ -5800,12 +5801,38 @@ var WORLD_WATER = [
     for (i = 0; i < v.length; i++) v[i] /= n;
     return v;
   }
-  function recogRank(q) {
+  // The model only sees a centred square, so a wide or tall photo loses its ends. Also look at the two end squares (counted slightly less).
+  async function recogViews(blob) {
+    var url = URL.createObjectURL(blob);
+    try {
+      var img = await new Promise(function (res, rej) { var i = new Image(); i.onload = function () { res(i); }; i.onerror = rej; i.src = url; });
+      var w = img.naturalWidth, h = img.naturalHeight, r = w / h, views = [{ blob: blob, k: 1 }];
+      if (r > 1.25 || r < 0.8) {
+        var side = Math.min(w, h), wide = r > 1;
+        [0, 1].forEach(function (end) {
+          var c = document.createElement('canvas'); c.width = c.height = Math.min(side, 448);
+          var sx = wide ? (end ? w - side : 0) : 0, sy = wide ? 0 : (end ? h - side : 0);
+          c.getContext('2d').drawImage(img, sx, sy, side, side, 0, 0, c.width, c.height);
+          views.push({ canvas: c, k: 0.97 });
+        });
+        for (var i = 1; i < views.length; i++) {
+          views[i].blob = await new Promise(function (res) { views[i].canvas.toBlob(res, 'image/jpeg', 0.92); });
+        }
+      }
+      return views;
+    } finally { URL.revokeObjectURL(url); }
+  }
+  function recogRank(qs) {
+    if (!Array.isArray(qs)) qs = [{ v: qs, k: 1 }];
     var N = RECOG.index.length, vecs = RECOG.vecs, top = [];
     for (var k = 0; k < N; k++) {
       var base = k * 512, dot = 0;
-      for (var d = 0; d < 512; d++) dot += q[d] * vecs[base + d];
-      dot /= 127;
+      for (var qi = 0; qi < qs.length; qi++) {
+        var q = qs[qi].v, part = 0;
+        for (var d = 0; d < 512; d++) part += q[d] * vecs[base + d];
+        part = part / 127 * qs[qi].k;
+        if (part > dot) dot = part;
+      }
       if (dot < RECOG_MIN) continue;
       if (top.length < 3 || dot > top[top.length - 1].s) {
         top.push({ k: k, s: dot });
@@ -5854,7 +5881,9 @@ var WORLD_WATER = [
       await recogLoadIndex();
       await recogLoadModel(note);
       note.textContent = 'Looking closely\u2026';
-      var top = recogRank(await recogEmbed(blob));
+      var views = await recogViews(blob), qs = [];
+      for (var vi = 0; vi < views.length; vi++) qs.push({ v: await recogEmbed(views[vi].blob), k: views[vi].k });
+      var top = recogRank(qs);
       note.textContent = '';
       recogShow(top);
     } catch (e) {
@@ -5967,7 +5996,8 @@ var WORLD_WATER = [
       } else if (code === 'image_rejected' || code === 'images_unavailable') {
         note.textContent = 'Could not use that photo. Try replacing it, or autofill without it.';
       } else if (code !== 'cancelled') {
-        note.textContent = 'Could not autofill. Fill in the details by hand.';
+        var msg = String(err && err.message || '');
+        note.textContent = /^wikidata|timeout|Failed to fetch|Load failed|NetworkError/i.test(msg) ? 'Could not reach Wikidata. Check your connection and try again.' : 'Could not autofill. Fill in the details by hand.';
       }
     } finally {
       btn.disabled = false;
@@ -7232,11 +7262,15 @@ var WORLD_WATER = [
      kind of answer the AI Autofill gives, or null when it cannot be sure which work is meant. */
   var WD_API = 'https://www.wikidata.org/w/api.php';
   var WD_CITY = ['Q515', 'Q1549591', 'Q1637706', 'Q702492', 'Q486972', 'Q3957', 'Q532', 'Q5119', 'Q1093829', 'Q484170', 'Q15284', 'Q747074', 'Q7930989', 'Q200250'];
-  function wdGet(params) {
+  function wdGet(params, again) {
     var q = Object.keys(params).map(function (k) { return k + '=' + encodeURIComponent(params[k]); }).join('&');
     return withTimeout(fetch(WD_API + '?format=json&origin=*&' + q), 12000).then(function (r) {
       if (!r.ok) throw new Error('wikidata ' + r.status);
       return r.json();
+    }).catch(function (e) {
+      // A phone connection often fails once and works the second time.
+      if (again) throw e;
+      return new Promise(function (res) { setTimeout(res, 700); }).then(function () { return wdGet(params, true); });
     });
   }
   function wdEntities(ids) {
@@ -7336,6 +7370,11 @@ var WORLD_WATER = [
     if (!title) return null;
     var found = await wdGet({ action: 'wbsearchentities', search: title, language: 'en', uselang: 'en', type: 'item', limit: '25' });
     var ids = (found.search || []).map(function (x) { return x.id; });
+    // Many paintings share a title, so the plain search can push the right one out of its first 25. Also ask for paintings only.
+    try {
+      var onlyPaintings = await wdGet({ action: 'query', list: 'search', srsearch: title + ' haswbstatement:P31=Q3305213', srnamespace: '0', srlimit: '30' });
+      ((onlyPaintings.query && onlyPaintings.query.search) || []).forEach(function (x) { if (x.title && ids.indexOf(x.title) < 0) ids.push(x.title); });
+    } catch (extraErr) { /* the plain search is enough to go on */ }
     if (!ids.length) return null;
     var ents = await wdEntities(ids);
     var cands = ids.map(function (id) { return ents[id]; }).filter(function (e) { return e && wdIds(e, 'P170').length; });
