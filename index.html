@@ -1464,6 +1464,11 @@ body.is-empty .nv-row { display: none; }
 .viewpanel { bottom: calc(env(safe-area-inset-bottom, 0px) + 66px); }
 body.is-empty .nb-view, body.is-empty .nb-find { display: none; }
 .tabbar.kb-up { padding-bottom: 0; }
+/* No iPhone tap flash around the bar (the bar handles taps for all its buttons, so iOS highlights all of it); each icon dims softly while pressed instead. */
+.tabbar, .tabbar * { -webkit-tap-highlight-color: transparent; -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
+.tabbar .tab svg { transition: opacity .12s ease; }
+.tabbar .tab:active svg { opacity: .55; }
+.nb-sw input.search { -webkit-user-select: text; user-select: text; }
 @media (prefers-reduced-motion: reduce) { .nb-pages, .nb-pages > .tab, .nb-main, .nb-find, .nb-sw, .nb-sw svg, .nb-sw input.search, .nb-sw .filterbtn, .nb-sw .clearbtn { transition: none !important; animation: none !important; } }
 </style>
 
@@ -1583,7 +1588,7 @@ body.is-empty .nb-view, body.is-empty .nb-find { display: none; }
         <button type="button" class="btn" id="copyBackup">Copy</button>
       </div>
     </section>
-    <p class="buildline" id="buildLine">Version 2026-11-28 15:45</p>
+    <p class="buildline" id="buildLine">Version 2026-11-28 16:00</p>
       </div>
 </div>
 
