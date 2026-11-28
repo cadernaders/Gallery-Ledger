@@ -39,6 +39,9 @@ CSS uses a prefix per feature: `ts-` tour scenes, `br-` Browse a museum's notabl
 ## Still in the code but not reachable on the phone
 - Scan placard and AI autofill, and the Claude-hosted storage mode (`coll`, `mcoll`, `hostService('db')`). They only run when the app is hosted inside Claude. Kept in case an AI route is added later. Removing the storage branch touches save, delete, load and backup, so test those and ask for a fresh backup first.
 
+## Optional AI: rules for keeping the door open
+The app must work fully with no AI and no running costs (this is the case today: recognition runs on the phone, autofill uses Wikidata, hosting is free). AI is an optional extra: find it by searching for `aiOn()` and `sampleFn`. Rules: an AI feature is a button that stays hidden unless AI is available (like Scan placard); it runs only when the owner taps it, never in the background; nothing else may depend on it; if an AI server is ever added, it is a separate paid service, so say so before connecting it.
+
 ## Parked ideas
 Install-as-an-app guide slide; app rename (the owner likes "Placard"); a Room field and Met/Chicago museum connectors (advised against broad connectors); artist birth/death years; photo for works added from Notable works (Wikimedia Commons image, public-domain only, test on the phone first); real iCloud backup.
 
