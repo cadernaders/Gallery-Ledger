@@ -27,6 +27,7 @@ CSS uses a prefix per feature: `ts-` tour scenes, `br-` Browse a museum's notabl
 ## Behaviour worth knowing
 - Tapping a work in Gallery view opens the photo viewer. In List and Timeline it opens the info (edit) page. There are no expanded rows any more.
 - Autofill: Wikidata lookup (`wikiLookup`) fills artist, year, medium, movement, subject, museum, city and country. The recognise button finds the work from the photo using the CLIP model in the browser (transformers.js, loaded from a CDN on first use) and the index in `data/`, then runs the same lookup using the matched Wikidata id.
+- **Scan placard** reads a museum label on the phone with no AI and no cost: `readPlacard` uses AI only if `aiOn()`, otherwise `readPlacardOnPhone`, which runs Tesseract.js (loaded from jsdelivr on first use, English and Italian, cached after) on a grey, shrunk copy of the photo, then `parseLabel` guesses artist, title, year and medium from the lines. It then runs the normal Wikidata autofill on the title. It is a best guess; the owner checks it. It could not be tested against real OCR in the sandbox (no network), only with a stand-in for Tesseract and typed label text. To add a language, add it to `OCR_LANGS`.
 - The first-time download note for the recogniser shows only once (`gallery-ledger-recog-dl`).
 - Examples: ten sample works with photos embedded in the page so they work offline; they are seeded once after the tour (`gallery-ledger-seeded`).
 - Backups are JSON with photos in base64. `buildBackup` copies all fields, but the import has a whitelist of fields: add new fields there too.
@@ -37,7 +38,7 @@ CSS uses a prefix per feature: `ts-` tour scenes, `br-` Browse a museum's notabl
 - Mixed leftovers cleaned in two passes; if something looks unused it probably still is. Check that a name is referenced before deleting.
 
 ## Still in the code but not reachable on the phone
-- Scan placard and AI autofill, and the Claude-hosted storage mode (`coll`, `mcoll`, `hostService('db')`). They only run when the app is hosted inside Claude. Kept in case an AI route is added later. Removing the storage branch touches save, delete, load and backup, so test those and ask for a fresh backup first.
+- The AI branches (AI autofill and the AI version of reading a label), and the Claude-hosted storage mode (`coll`, `mcoll`, `hostService('db')`). They only run when the app is hosted inside Claude. Kept in case an AI route is added later. Removing the storage branch touches save, delete, load and backup, so test those and ask for a fresh backup first.
 
 ## Optional AI: rules for keeping the door open
 The app must work fully with no AI and no running costs (this is the case today: recognition runs on the phone, autofill uses Wikidata, hosting is free). AI is an optional extra: find it by searching for `aiOn()` and `sampleFn`. Rules: an AI feature is a button that stays hidden unless AI is available (like Scan placard); it runs only when the owner taps it, never in the background; nothing else may depend on it; if an AI server is ever added, it is a separate paid service, so say so before connecting it.

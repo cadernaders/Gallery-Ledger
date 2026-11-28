@@ -1351,7 +1351,7 @@ body.plan-open .addpop { z-index: 26; bottom: calc(env(safe-area-inset-bottom, 0
 .need-row svg { flex: none; color: var(--muted); }
 .needsheet .wp-suggest { padding: 14px 0 0; border: 0; border-radius: 0; background: none; border-top: 1px solid var(--line); margin-top: 6px; }
 .needsheet .wp-sugbtns { width: 100%; }
-.needsheet .wp-sugbtns .btn { flex: 1 1 0; height: 44px; border-radius: 22px; font-weight: 600; }
+.needsheet .wp-sugbtns .btn { flex: 1 1 calc(50% - 8px); white-space: nowrap; height: 44px; border-radius: 22px; font-weight: 600; }
 #moreMenu { z-index: 31; background: rgba(30, 20, 15, .16); }
 /* Soft open and close for every layer listed in SOFT_LAYERS (see the script). */
 /* Motion standard: opening takes about 200-260 ms and eases out; closing is faster, about 150 ms, and eases in; small pop-up menus and their dim take about 150 ms either way. Nothing ever blocks a tap. */
@@ -1535,7 +1535,7 @@ body.plan-open .addpop { z-index: 26; bottom: calc(env(safe-area-inset-bottom, 0
         <button type="button" class="btn" id="copyBackup">Copy</button>
       </div>
     </section>
-    <p class="buildline" id="buildLine">Version 2026-11-28 06:40</p>
+    <p class="buildline" id="buildLine">Version 2026-11-28 07:10</p>
       </div>
 </div>
 
@@ -4859,7 +4859,7 @@ var WORLD_WATER = [
       }
       var r = pendBatch; pendBatch = { saved: 0, lastId: '' };
       if (r.saved) {
-        if (r.saved === 1 && r.lastId && placardOfferOn() && aiOn() && !pending.length) offerPlacard(r.lastId);
+        if (r.saved === 1 && r.lastId && placardOfferOn() && !pending.length) offerPlacard(r.lastId);
         else if (!pending.length) toast(r.saved + (r.saved === 1 ? ' photo' : ' photos') + (draftsOn() ? ' saved to Drafts.' : ' added to your gallery.'));
       }
     })();
@@ -5059,7 +5059,7 @@ var WORLD_WATER = [
     $(id).addEventListener('change', function (e) { var f = e.target.files; quickSave(f, id === 'qLib').then(function () { e.target.value = ''; }); });
   });
 
-  function syncAutofill() { syncRecog(); $('autofillRow').hidden = !sampleFn || (typeof formComplete !== 'undefined' && formComplete); $('placardOfferRow').hidden = !aiOn(); $('placardBtn').hidden = !aiOn(); }
+  function syncAutofill() { syncRecog(); $('autofillRow').hidden = !sampleFn || (typeof formComplete !== 'undefined' && formComplete); $('placardOfferRow').hidden = false; $('placardBtn').hidden = false; }
   // The label scan leads when there is a photo but no title yet; Autofill leads once there is one.
   var NOTE_TYPE = 'Type the title and the artist, then tap Autofill to fill in the rest.';
   var NOTE_RECOG = 'Tap Recognise to identify the work from your photo, or type its title and tap Autofill.';
@@ -6019,8 +6019,8 @@ var WORLD_WATER = [
   $('draftsOnBox').addEventListener('change', function () { try { localStorage.setItem('gallery-ledger-drafts', $('draftsOnBox').checked ? '1' : '0'); } catch (e) { /* the choice just won't be remembered */ } });
   $('placardOffer').checked = placardOfferOn();
   $('placardOffer').addEventListener('change', function () { try { localStorage.setItem('gallery-ledger-placardoffer', $('placardOffer').checked ? '1' : '0'); } catch (e) { /* the choice just won't be remembered */ } });
-  async function readPlacard(file) {
-    if (!aiOn()) throw { code: 'no_sample' };
+  async function readPlacard(file, note) {
+    if (!aiOn()) return readPlacardOnPhone(file, note);
     var caps = await sampleFn.limits();
     if (!caps || !caps.images) throw { code: 'images_unavailable' };
     var blob = await processImage(file);
@@ -6034,11 +6034,136 @@ var WORLD_WATER = [
     if (!data || String(data.readable).toLowerCase() !== 'yes') return null;
     return data;
   }
+  /* ---------- reading a museum label on the phone (no AI, no cost) ----------
+     The photo is read as text by Tesseract (a free reader that runs in the browser, downloaded once from a CDN),
+     then parseLabel() picks out artist, title, year and medium from the lines. Always a best guess: the owner checks it. */
+  var OCR = { w: null, loading: null };
+  var OCR_LIB = 'https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js';
+  var OCR_LANGS = ['eng', 'ita'];
+  function ocrHadDownload() { try { return localStorage.getItem('gallery-ledger-ocr-dl') === '1'; } catch (e) { return false; } }
+  function ocrScript() {
+    if (window.Tesseract) return Promise.resolve();
+    return new Promise(function (resolve, reject) {
+      var sc = document.createElement('script');
+      sc.src = OCR_LIB;
+      sc.onload = resolve;
+      sc.onerror = function () { reject({ code: 'ocr_offline' }); };
+      document.head.appendChild(sc);
+    });
+  }
+  async function ocrWorker(note) {
+    if (OCR.w) return OCR.w;
+    if (!OCR.loading) {
+      var first = !ocrHadDownload();
+      OCR.loading = (async function () {
+        await ocrScript();
+        var w = await window.Tesseract.createWorker(OCR_LANGS, 1, {
+          logger: function (m) {
+            if (!first || !m || typeof m.progress !== 'number' || !/loading|initializ/.test(m.status || '')) return;
+            note.textContent = 'Downloading the label reader, one time only… ' + Math.min(99, Math.round(m.progress * 100)) + '%';
+          }
+        });
+        OCR.w = w;
+        try { localStorage.setItem('gallery-ledger-ocr-dl', '1'); } catch (e) { /* fine */ }
+        return w;
+      })();
+      OCR.loading.catch(function () { OCR.loading = null; });
+    }
+    return OCR.loading;
+  }
+  // A smaller, grey, higher-contrast copy of the photo reads much better (and uses far less memory) than the full photo.
+  async function ocrPrepare(file) {
+    var blob = await processImage(file);
+    var url = URL.createObjectURL(blob);
+    try {
+      var img = await new Promise(function (res, rej) { var i = new Image(); i.onload = function () { res(i); }; i.onerror = rej; i.src = url; });
+      var k = Math.min(1, 2200 / Math.max(img.naturalWidth, img.naturalHeight));
+      var c = document.createElement('canvas');
+      c.width = Math.max(1, Math.round(img.naturalWidth * k)); c.height = Math.max(1, Math.round(img.naturalHeight * k));
+      var g = c.getContext('2d');
+      g.drawImage(img, 0, 0, c.width, c.height);
+      var d = g.getImageData(0, 0, c.width, c.height), px = d.data, n = c.width * c.height, lo = 255, hi = 0, i2;
+      for (i2 = 0; i2 < n; i2++) {
+        var v = Math.round(px[i2 * 4] * 0.3 + px[i2 * 4 + 1] * 0.59 + px[i2 * 4 + 2] * 0.11);
+        px[i2 * 4] = v; if (v < lo) lo = v; if (v > hi) hi = v;
+      }
+      var span = Math.max(40, hi - lo);
+      for (i2 = 0; i2 < n; i2++) { var u = Math.max(0, Math.min(255, Math.round((px[i2 * 4] - lo) * 255 / span))); px[i2 * 4] = px[i2 * 4 + 1] = px[i2 * 4 + 2] = u; }
+      g.putImageData(d, 0, 0);
+      return await new Promise(function (res, rej) { c.toBlob(function (b) { if (b) res(b); else rej(new Error('encode')); }, 'image/png'); });
+    } finally { URL.revokeObjectURL(url); }
+  }
+  var LABEL_NAT = '(?:american|british|english|scottish|irish|french|italian|spanish|dutch|flemish|german|swiss|austrian|russian|norwegian|danish|swedish|belgian|polish|czech|hungarian|portuguese|greek|japanese|chinese|mexican|canadian|australian|netherlandish|florentine|venetian|sienese|roman|neapolitan|bolognese|milanese|genoese|fiammingo|olandese|francese|spagnolo|tedesco|inglese|americano|italiano|italiana|fiorentino|veneziano|senese|romano|napoletano|bolognese|lombardo|russo|svizzero|austriaco|belga|danese|norvegese|svedese)';
+  var LABEL_LIFE = /(?:\b(?:1[0-9]{3}|[5-9][0-9]{2})\s*[–—-]\s*(?:1[0-9]{3}|[0-9]{2,4})?\b)|(?:\b(?:b\.|born|nato|nata|n\.)\s*\d{4})/i;
+  var LABEL_MEDIUM = /\b(?:(?:oil|tempera|acrylic|watercolou?r|gouache|ink|pastel|charcoal|graphite|chalk|fresco|encaustic|egg tempera|mixed media|olio|acquerello|pastello|carboncino|affresco)\s+(?:and\s+[a-z]+\s+)?(?:on|over|su|sur|auf)\s+[a-zà-ÿ ]{2,26}|marble|bronze|terracotta|plaster|marmo|bronzo|gesso|woodcut|etching|engraving|lithograph|silkscreen|photograph|gelatin silver print|chromogenic print)\b/i;
+  var LABEL_MEDIUM_EN = { 'olio su tela': 'Oil on canvas', 'olio su tavola': 'Oil on panel', 'olio su rame': 'Oil on copper', 'tempera su tavola': 'Tempera on panel', 'affresco': 'Fresco', 'marmo': 'Marble', 'bronzo': 'Bronze', 'acquerello': 'Watercolor', 'pastello': 'Pastel', 'carboncino': 'Charcoal', 'gesso': 'Plaster' };
+  var LABEL_CREDIT = /^(?:gift|presented|purchased?|purchase|bequest|bequeathed|collection|acquired|acquisition|inv\.?|acc\.?|accession|credit|on loan|loan|donated|dono|lascito|courtesy|photo|photograph by|object number|museum number|signed|inscribed|dimensions|height|width)\b/i;
+  var LABEL_YEARLINE = /^(?:c\.?|ca\.?|circa|about|dated)?\s*(?:(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.?\s+)?\d{3,4}(?:\s*[–—-]\s*\d{2,4})?s?$/i;
+  var LABEL_YEAR_END = /[,.:;(]?\s*((?:c\.?|ca\.?|circa)?\s*(?:1[0-9]{3}|20[0-2][0-9]|[5-9][0-9]{2})(?:\s*[–—-]\s*\d{2,4})?)\)?\s*$/i;
+  function labelClean(t) { return t.replace(/[|_~©®™]+/g, ' ').replace(/\s+/g, ' ').replace(/^[^A-Za-zÀ-ɏ0-9("']+/, '').replace(/[^A-Za-zÀ-ɏ0-9)."'!?]+$/, '').trim(); }
+  function labelNameish(t) { return /^[A-ZÀ-Þ][\wÀ-ɏ.'’-]*(?:\s+(?:de|del|della|di|da|van|von|der|den|le|la|y|d'|dos|ten)?\s*[A-ZÀ-Þ][\wÀ-ɏ.'’-]*){0,4}$/.test(t) && t.split(' ').length <= 5; }
+  // Best guess at artist, title, year and medium from the text of a label. Returns null when it finds neither a title nor an artist.
+  function parseLabel(raw) {
+    var lines = String(raw || '').split(/\r?\n/).map(labelClean).filter(function (l) { return (l.match(/[A-Za-zÀ-ɏ]/g) || []).length >= 2 || LABEL_YEARLINE.test(l); });
+    if (!lines.length) return null;
+    var used = {}, out = { title: '', artist: '', year: '', medium: '', museum: '', city: '', country: '' };
+    var natRe = new RegExp('\\b' + LABEL_NAT + '\\b', 'i');
+    // medium
+    lines.forEach(function (l, i) {
+      if (out.medium) return;
+      var m = l.match(LABEL_MEDIUM);
+      if (m) { var mm = m[0].trim(); var key = mm.toLowerCase(); out.medium = LABEL_MEDIUM_EN[key] || (/\bsu\b/.test(key) ? key.replace(/\bolio\b/, 'oil').replace(/\bsu\b/, 'on').replace(/\btela\b/, 'canvas').replace(/\btavola\b/, 'panel').replace(/\brame\b/, 'copper').replace(/\bcarta\b/, 'paper') : key); out.medium = out.medium.charAt(0).toUpperCase() + out.medium.slice(1); used[i] = 1; }
+    });
+    // the line with the artist's nationality and dates
+    var life = -1;
+    lines.forEach(function (l, i) { if (life < 0 && !used[i] && (LABEL_LIFE.test(l) && (natRe.test(l) || /\(/.test(l) || l.length < 40))) life = i; });
+    if (life < 0) lines.forEach(function (l, i) { if (life < 0 && !used[i] && natRe.test(l) && l.length < 60) life = i; });
+    if (life >= 0) {
+      used[life] = 1;
+      var ll = lines[life], pre = ll.split('(')[0].replace(natRe, '').replace(LABEL_LIFE, '').replace(/[,;]+\s*$/, '').trim();
+      // A name before a bracket is the artist. Otherwise the line above (the name) wins over a place such as "Firenze 1445 - 1510".
+      if (pre && /\(/.test(ll) && labelNameish(pre)) out.artist = pre;
+      else if (life > 0 && !used[life - 1] && labelNameish(lines[life - 1])) { out.artist = lines[life - 1]; used[life - 1] = 1; }
+      else if (pre && labelNameish(pre)) out.artist = pre;
+    } else if (labelNameish(lines[0]) && !LABEL_MEDIUM.test(lines[0]) && lines.length > 1) { out.artist = lines[0]; used[0] = 1; }
+    // title: the first remaining line after the artist, years removed
+    var start = life >= 0 ? life + 1 : 0, ti = -1;
+    for (var i = start; i < lines.length && ti < 0; i++) {
+      if (!used[i] && !LABEL_CREDIT.test(lines[i]) && !LABEL_YEARLINE.test(lines[i]) && !/^\d/.test(lines[i])) ti = i;
+    }
+    if (ti < 0) for (var j = 0; j < lines.length && ti < 0; j++) if (!used[j] && !LABEL_CREDIT.test(lines[j]) && !LABEL_YEARLINE.test(lines[j]) && !(out.artist && lines[j] === out.artist)) ti = j;
+    if (ti >= 0) {
+      var t = lines[ti];
+      used[ti] = 1;
+      var nx = lines[ti + 1];
+      if (nx && !used[ti + 1] && (/^[a-z]/.test(nx) || /[,\-–]$/.test(t)) && !LABEL_MEDIUM.test(nx) && !LABEL_YEARLINE.test(nx) && !LABEL_CREDIT.test(nx)) { t = t + ' ' + nx; used[ti + 1] = 1; }
+      var ym = t.match(LABEL_YEAR_END);
+      if (ym && t.length > ym[0].length + 2) { out.year = ym[1].replace(/\s+/g, ' ').trim(); t = t.slice(0, ym.index).trim(); }
+      out.title = t.replace(/[,.;:\s]+$/, '');
+    }
+    // year: a line with only a date
+    if (!out.year) lines.forEach(function (l, i) { if (!out.year && !used[i] && LABEL_YEARLINE.test(l) && !(LABEL_LIFE.test(l) && /\d{3,4}\s*[–—-]\s*\d{4}/.test(l) && parseInt(l, 10) < 1950 && (parseInt(l.split(/[–—-]/)[1], 10) - parseInt(l, 10)) > 15)) out.year = l.replace(/\s+/g, ' ').trim(); });
+    out.title = tidyCaps(out.title); out.artist = tidyCaps(out.artist);
+    // Stray marks from a bad photo are not a label: need a real word, and more than one thing found.
+    var found = [out.title, out.artist, out.medium, out.year].filter(Boolean).length;
+    if ((!out.title && !out.artist) || (found < 2 && !((out.title || out.artist).match(/[A-Za-z\u00c0-\u024f]{4,}/)))) return null;
+    return out;
+  }
+  async function readPlacardOnPhone(file, note) {
+    note = note || document.createElement('span');
+    var img = await ocrPrepare(file);
+    var w = await ocrWorker(note);
+    note.textContent = 'Reading the label…';
+    var res = await w.recognize(img);
+    var text = res && res.data && res.data.text;
+    return parseLabel(text);
+  }
   function placardError(err) {
     var code = err && err.code;
     if (code === 'rate_limited') return 'Too many requests just now. Try again in a minute.';
     if (code === 'not_granted' || code === 'sampling_disabled' || code === 'not_declared' || code === 'capability_disabled' || code === 'no_sample') return 'Scanning is not available right now.';
     if (code === 'image_rejected' || code === 'images_unavailable') return 'Could not use that photo. Try again.';
+    if (code === 'ocr_offline') return 'The label reader could not be downloaded. Check your connection and try again.';
     return 'Could not read the label. Try again, closer and in better light.';
   }
   // Fills the empty fields of the open page from a label.
@@ -6047,7 +6172,7 @@ var WORLD_WATER = [
     btn.disabled = true;
     note.textContent = 'Reading the label\u2026';
     try {
-      var data = await readPlacard(file);
+      var data = await readPlacard(file, note);
       if (!data) { note.textContent = 'Could not find a museum label in that photo. Try again, closer and in better light.'; return; }
       var filled = 0;
       var map = { title: 'f-title', artist: 'f-artist', year: 'f-year', medium: 'f-medium', museum: 'f-museum', city: 'f-city', country: 'f-country' };
@@ -6060,6 +6185,8 @@ var WORLD_WATER = [
       syncMediumSelect(); moreSummary();
       note.textContent = filled ? 'Filled ' + filled + (filled === 1 ? ' field' : ' fields') + ' from the label. Check them over.' : 'Nothing new on that label.';
       if (filled) scheduleSave();
+      // With a title in place, the usual lookup can fill in the rest (movement, subject, museum).
+      if (filled && norm($('f-title').value) && !$('autofillRow').hidden && !$('autofillBtn').disabled) { note.textContent = 'Read the label. Filling in the rest\u2026'; $('autofillBtn').click(); }
     } catch (err) { note.textContent = placardError(err); }
     finally { btn.disabled = false; }
   }
@@ -6088,7 +6215,7 @@ var WORLD_WATER = [
     var id = placardFor;
     toast('Reading the label\u2026');
     try {
-      var data = await readPlacard(f);
+      var data = await readPlacard(f, document.createElement('span'));
       var d = allItems.filter(function (x) { return x.id === id; })[0];
       if (!d) { toast('That draft is gone.'); return; }
       if (!data) { toast('Photo saved. Could not find a museum label in that photo.'); return; }
