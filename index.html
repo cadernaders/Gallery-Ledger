@@ -1454,7 +1454,7 @@ body.is-empty .nv-row { display: none; }
 .nb-search { position: absolute; inset: 0; overflow: hidden; visibility: hidden; pointer-events: none; transition: visibility 0s .42s; }
 .nb-search-open .nb-search { visibility: visible; pointer-events: none; transition: none; }
 .searchwrap.nb-sw { position: absolute; top: 50%; margin-top: -22px; height: 44px; box-sizing: border-box; left: calc(87.5% - 22px); right: calc(12.5% - 22px); border: 1px solid transparent; border-radius: 22px; background: transparent; transition: left .4s cubic-bezier(.4, 0, .2, 1), right .4s cubic-bezier(.4, 0, .2, 1), border-color .2s ease .22s, background-color .2s ease .22s, box-shadow .15s ease; }
-.nb-search-open .searchwrap.nb-sw { left: calc(12.5% - 22px); right: calc(12.5% - 22px); pointer-events: auto; border-color: var(--line); background: var(--surface); transition: left .4s cubic-bezier(.4, 0, .2, 1), right .4s cubic-bezier(.4, 0, .2, 1), border-color .2s ease, background-color .2s ease, box-shadow .2s ease; }
+.nb-search-open .searchwrap.nb-sw { left: calc(12.5% - 22px); right: calc(12.5% - 22px); pointer-events: auto; border-color: var(--line); background: var(--surface); transition: left .4s cubic-bezier(.4, 0, .2, 1), right .4s cubic-bezier(.4, 0, .2, 1), border-color .12s ease, background-color .2s ease, box-shadow .12s ease; }
 .nb-search-open .searchwrap.nb-sw:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent); }
 .nb-sw svg { left: 8px; width: 26px; height: 26px; z-index: 1; transition: left .4s cubic-bezier(.4, 0, .2, 1), width .4s cubic-bezier(.4, 0, .2, 1), height .4s cubic-bezier(.4, 0, .2, 1); }
 .nb-search-open .nb-sw svg { left: 13px; width: 18px; height: 18px; }
@@ -1595,7 +1595,7 @@ body.is-empty .nb-view, body.is-empty .nb-find { display: none; }
         <button type="button" class="btn" id="copyBackup">Copy</button>
       </div>
     </section>
-    <p class="buildline" id="buildLine">Version 2026-11-28 16:50</p>
+    <p class="buildline" id="buildLine">Version 2026-11-28 17:05</p>
       </div>
 </div>
 
@@ -2455,10 +2455,14 @@ var WORLD_WATER = [
   $('searchClose').addEventListener('click', function () {
     haptic();
     if (ui.q) { ui.q = ''; $('q').value = ''; render(); return; }
-    ui.sopen = false; ui.fopen = false;
-    ui.fav = false; ui.fneed = false; ui.fmov = ''; ui.fmed = ''; ui.fsub = ''; ui.fcent = ''; ui.fctry = ''; ui.fmus = ''; ui.fart = '';
-    if (document.activeElement) document.activeElement.blur();
-    render();
+    var closeSearch = function () {
+      ui.sopen = false; ui.fopen = false;
+      ui.fav = false; ui.fneed = false; ui.fmov = ''; ui.fmed = ''; ui.fsub = ''; ui.fcent = ''; ui.fctry = ''; ui.fmus = ''; ui.fart = '';
+      render();
+    };
+    // If the field has the red typing outline, let it fade to grey first, then shrink, so the red does not hang around the shrinking circle.
+    if (document.activeElement === $('q')) { $('q').blur(); setTimeout(closeSearch, 140); }
+    else { if (document.activeElement) document.activeElement.blur(); closeSearch(); }
   });
   // When the iPhone keyboard is up for the search field, lift the bar so the field stays above it.
   // Only while you are typing in the field: scrolling and bouncing also nudge the visible area, and must never move the bar.
