@@ -1535,7 +1535,7 @@ body.plan-open .addpop { z-index: 26; bottom: calc(env(safe-area-inset-bottom, 0
         <button type="button" class="btn" id="copyBackup">Copy</button>
       </div>
     </section>
-    <p class="buildline" id="buildLine">Version 2026-11-28 08:10</p>
+    <p class="buildline" id="buildLine">Version 2026-11-28 10:40</p>
       </div>
 </div>
 
@@ -7417,6 +7417,7 @@ var WORLD_WATER = [
     data.movements = wdMovementNames(mvLabels);
     data.subject = wdSubject(genreIds.map(function (id) { return wdLabel(more[id]); }));
     var m = museumId ? more[museumId] : null;
+    if (m && /unknown value|no value/i.test(wdLabel(m))) m = null; // Wikidata's stand-in for "whereabouts unknown" is not a museum
     if (m) {
       data.museum = wdLabel(m);
       var pc = wdClaims(m, 'P625')[0];
