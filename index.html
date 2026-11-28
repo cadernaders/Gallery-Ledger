@@ -1744,7 +1744,7 @@ body.plan-open .addpop { z-index: 26; bottom: calc(env(safe-area-inset-bottom, 0
         <button type="button" class="btn" id="copyBackup">Copy</button>
       </div>
     </section>
-    <p class="buildline" id="buildLine">Version 2026-11-28 05:20</p>
+    <p class="buildline" id="buildLine">Version 2026-11-28 05:35</p>
       </div>
 </div>
 
@@ -6341,7 +6341,7 @@ var WORLD_WATER = [
         note.textContent = sampleFn.wiki ? 'Couldn\u2019t find a sure match on Wikidata. Check the title and artist spelling.' : 'Couldn\u2019t identify it. Add the artist or a clearer photo.';
         return;
       }
-      var filled = 0;
+      var filled = 0, aboutAdded = false;
       var map = { artist: 'f-artist', year: 'f-year', medium: 'f-medium', museum: 'f-museum', city: 'f-city', country: 'f-country' };
       Object.keys(map).forEach(function (k) {
         var v = norm(data[k]).slice(0, 120);
@@ -6365,14 +6365,14 @@ var WORLD_WATER = [
       if (data.subject && SUBJECTS.indexOf(data.subject) >= 0 && !draftSubject) { draftSubject = data.subject; renderSubject(); moreSummary(); filled++; }
       if (data.about && /^https:\/\/[a-z.]*wikipedia\.org\//.test(String(data.aboutUrl || ''))) {
         draft.about = { text: norm(data.about).slice(0, 600), url: String(data.aboutUrl).slice(0, 300) };
-        filled++;
+        aboutAdded = true; // the Wikipedia text is not a field on the page, so it is not counted below
       }
       var newTitle = norm(data.title).slice(0, 160);
       var oldTitle = norm($('f-title').value);
-      if (newTitle && newTitle.toLowerCase() !== oldTitle.toLowerCase()) { $('f-title').value = newTitle; filled++; }
-      note.textContent = filled ? 'Filled ' + filled + (filled === 1 ? ' field.' : ' fields.') + ' Check them over.' + (sampleFn.wiki ? ' Source: Wikidata.' : '') : 'Nothing new to fill in.';
+      if (newTitle && newTitle.toLowerCase() !== oldTitle.toLowerCase()) { $('f-title').value = newTitle; if (!oldTitle) filled++; } // a title you already typed being tidied up is not a new field
+      note.textContent = filled ? 'Filled ' + filled + (filled === 1 ? ' field.' : ' fields.') + ' Check them over.' + (sampleFn.wiki ? ' Source: Wikidata.' : '') : (aboutAdded ? 'Added a short description.' : 'Nothing new to fill in.');
       syncPlaceUI();
-      if (filled) { moreSummary(); scheduleSave(); }
+      if (filled || aboutAdded) { moreSummary(); scheduleSave(); }
     } catch (err) {
       var code = err && err.code;
       if (code === 'not_granted' || code === 'sampling_disabled' || code === 'not_declared' || code === 'capability_disabled' || code === 'capability_removed') {
