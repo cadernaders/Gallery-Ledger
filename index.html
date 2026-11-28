@@ -1472,6 +1472,9 @@ body.is-empty .nb-view, body.is-empty .nb-find { display: none; }
 .tabbar .tab svg { transition: opacity .12s ease; }
 .tabbar .tab:active svg { opacity: .55; }
 .tabbar .nb-nav:active svg, .tabbar .nb-find:active svg, .nb-pages > .tab:active svg { opacity: 1; }
+/* Press feedback for Pages, Search and the page icons: a soft round tint behind the icon while your finger is down (the icon itself never changes, so nothing flashes when the animation takes over). */
+.tabbar .nb-nav::before, .tabbar .nb-find::before, .nb-pages > .tab::before { content: ""; position: absolute; left: 50%; top: 50%; width: 46px; height: 46px; margin: -23px 0 0 -23px; border-radius: 50%; background: color-mix(in srgb, var(--ink) 9%, transparent); opacity: 0; pointer-events: none; transition: opacity .18s ease; }
+.tabbar .nb-nav:active::before, .tabbar .nb-find:active::before, .nb-pages > .tab:active::before { opacity: 1; transition: opacity .04s ease; }
 .nb-sw input.search { -webkit-user-select: text; user-select: text; }
 @media (prefers-reduced-motion: reduce) { .nb-pages, .nb-pages > .tab, .nb-main, .nb-find, .nb-sw, .nb-sw svg, .nb-sw input.search, .nb-sw .filterbtn, .nb-sw .clearbtn { transition: none !important; animation: none !important; } }
 </style>
@@ -1592,7 +1595,7 @@ body.is-empty .nb-view, body.is-empty .nb-find { display: none; }
         <button type="button" class="btn" id="copyBackup">Copy</button>
       </div>
     </section>
-    <p class="buildline" id="buildLine">Version 2026-11-28 16:20</p>
+    <p class="buildline" id="buildLine">Version 2026-11-28 16:35</p>
       </div>
 </div>
 
