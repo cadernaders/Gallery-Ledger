@@ -1449,19 +1449,18 @@ body.is-empty .nv-row { display: none; }
 .nb-search { position: absolute; inset: 0; visibility: hidden; pointer-events: none; transition: visibility 0s .42s; }
 .nb-search-open .nb-search { visibility: visible; pointer-events: none; transition: none; }
 .searchwrap.nb-sw { position: absolute; top: 50%; margin-top: -22px; height: 44px; box-sizing: border-box; left: calc(87.5% - 22px); right: calc(12.5% - 22px); transition: left .4s cubic-bezier(.4, 0, .2, 1), right .4s cubic-bezier(.4, 0, .2, 1); }
-.nb-search-open .searchwrap.nb-sw { left: 16px; right: 86px; pointer-events: auto; }
+.nb-search-open .searchwrap.nb-sw { left: 16px; right: 16px; pointer-events: auto; }
 .nb-sw svg { left: 9px; width: 26px; height: 26px; z-index: 1; transition: left .4s cubic-bezier(.4, 0, .2, 1), width .4s cubic-bezier(.4, 0, .2, 1), height .4s cubic-bezier(.4, 0, .2, 1); }
 .nb-search-open .nb-sw svg { left: 14px; width: 18px; height: 18px; }
 .searchwrap.nb-sw input.search { height: 44px; border-radius: 22px; opacity: 0; transition: opacity .15s ease .26s; }
 .nb-search-open .searchwrap.nb-sw input.search { opacity: 1; transition: opacity .15s ease; }
 .nb-sw .filterbtn, .nb-sw .clearbtn { opacity: 0; transition: opacity .12s ease; }
 .nb-search-open .nb-sw .filterbtn, .nb-search-open .nb-sw .clearbtn { opacity: 1; transition: opacity .2s ease .24s; }
-.nb-cancel { position: absolute; right: 16px; top: 50%; margin-top: -22px; width: 64px; height: 44px; padding: 0; border: 0; background: none; font: inherit; font-size: 15px; font-weight: 500; text-align: right; color: var(--accent); cursor: pointer; opacity: 0; transition: opacity .12s ease; }
-.nb-search-open .nb-cancel { opacity: 1; pointer-events: auto; transition: opacity .2s ease .26s; }
+.searchwrap.nb-sw input.search, .searchwrap.nb-sw input.search:not(:placeholder-shown) { padding-right: 88px; }
 .viewpanel { bottom: calc(env(safe-area-inset-bottom, 0px) + 66px); }
 body.is-empty .nb-view, body.is-empty .nb-find { display: none; }
 .tabbar.kb-up { padding-bottom: 0; }
-@media (prefers-reduced-motion: reduce) { .nb-pages, .nb-pages > .tab, .nb-main, .nb-find, .nb-sw, .nb-sw svg, .nb-sw input.search, .nb-sw .filterbtn, .nb-sw .clearbtn, .nb-cancel { transition: none !important; animation: none !important; } }
+@media (prefers-reduced-motion: reduce) { .nb-pages, .nb-pages > .tab, .nb-main, .nb-find, .nb-sw, .nb-sw svg, .nb-sw input.search, .nb-sw .filterbtn, .nb-sw .clearbtn { transition: none !important; animation: none !important; } }
 </style>
 
 <div class="nv-band" id="topBand" aria-hidden="true"></div>
@@ -1580,16 +1579,16 @@ body.is-empty .nb-view, body.is-empty .nb-find { display: none; }
         <button type="button" class="btn" id="copyBackup">Copy</button>
       </div>
     </section>
-    <p class="buildline" id="buildLine">Version 2026-11-28 14:25</p>
+    <p class="buildline" id="buildLine">Version 2026-11-28 14:50</p>
       </div>
 </div>
 
 <nav class="tabbar" id="tabbar" aria-label="Main"><div class="tabs"><button type="button" class="tab nb-main nb-nav" id="navBtn" aria-pressed="true" aria-expanded="false" aria-controls="navPages" aria-label="Pages"></button><button type="button" class="tab tabquick nb-main" id="quickBtn" aria-label="Add" aria-haspopup="true" aria-expanded="false"><span class="qcircle"><svg viewBox="0 0 56 44" width="56" height="44" aria-hidden="true"><mask id="qfm"><rect width="56" height="44" fill="#fff"/><circle cx="28" cy="1.3" r="2.8" fill="#000"/><circle cx="28" cy="42.7" r="2.8" fill="#000"/><circle cx="1.3" cy="22" r="2.8" fill="#000"/><circle cx="54.7" cy="22" r="2.8" fill="#000"/></mask><g mask="url(#qfm)"><path d="M2.2 22C2.2 19.8 5 19 5 15.5C5 12 3.4 11 3.4 8C3.4 5.2 5.2 3.8 8 3.8C11 3.8 12.5 6 15.5 6C19 6 20.5 4.8 22.5 3.8C24.5 2.8 25.5 2.2 28 2.2C30.5 2.2 31.5 2.8 33.5 3.8C35.5 4.8 37 6 40.5 6C43.5 6 45 3.8 48 3.8C50.8 3.8 52.6 5.2 52.6 8C52.6 11 51 12 51 15.5C51 19 53.8 19.8 53.8 22C53.8 24.2 51 25 51 28.5C51 32 52.6 33 52.6 36C52.6 38.8 50.8 40.2 48 40.2C45 40.2 43.5 38 40.5 38C37 38 35.5 39.2 33.5 40.2C31.5 41.2 30.5 41.8 28 41.8C25.5 41.8 24.5 41.2 22.5 40.2C20.5 39.2 19 38 15.5 38C12.5 38 11 40.2 8 40.2C5.2 40.2 3.4 38.8 3.4 36C3.4 33 5 32 5 28.5C5 25 2.2 24.2 2.2 22Z" style="fill:var(--accent)"/></g><rect x="10" y="10.5" width="36" height="23" rx="1" style="fill:var(--surface)"/><path d="M28 15.5v13M21.5 22h13" fill="none" style="stroke:var(--accent)" stroke-width="2.6" stroke-linecap="round"/></svg></span></button><button type="button" class="tab nb-main nb-view" id="viewFab" aria-label="View options" aria-expanded="false" aria-controls="viewPanel"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/></svg></button><button type="button" class="tab nb-main nb-find" id="searchBtn" aria-expanded="false" aria-controls="nbSearch" aria-label="Search and filter"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg></button><div class="nb-pages" id="navPages"></div><div class="nb-search" id="nbSearch"><div class="searchwrap nb-sw" id="nvSw">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg>
       <input type="search" id="q" class="field-input search" enterkeyhint="search" placeholder="Search your collection" aria-label="Search works">
-      <button type="button" class="clearbtn auto" aria-label="Clear" tabindex="-1"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+      <button type="button" class="clearbtn nb-x" id="searchClose" aria-label="Clear the search, or close it"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
       <button type="button" class="filterbtn" id="filtersBtn" aria-expanded="false" aria-controls="filterPanel" aria-label="Filters" title="Filters"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16l-6.2 7.4V19l-3.6-1.8v-4.8z"/></svg><span class="fbadge" id="fBadge" hidden>0</span></button>
-    </div><button type="button" class="nb-cancel" id="searchCancel">Cancel</button></div></div></nav>
+    </div></div></div></nav>
 
 <div class="tourpage" id="tourPage" hidden role="dialog" aria-modal="true" aria-labelledby="tourH">
   <div class="tour-in">
@@ -2416,8 +2415,11 @@ var WORLD_WATER = [
     renderFilters();
   }
   $('searchBtn').addEventListener('click', openSearch);
-  $('searchCancel').addEventListener('click', function () {
-    ui.sopen = false; ui.fopen = false; ui.q = ''; $('q').value = '';
+  // The x at the end of the field: the first tap clears what you typed; with nothing typed it closes the search and clears the filters.
+  $('searchClose').addEventListener('pointerdown', function (e) { e.preventDefault(); });
+  $('searchClose').addEventListener('click', function () {
+    if (ui.q) { ui.q = ''; $('q').value = ''; render(); return; }
+    ui.sopen = false; ui.fopen = false;
     ui.fav = false; ui.fneed = false; ui.fmov = ''; ui.fmed = ''; ui.fsub = ''; ui.fcent = ''; ui.fctry = ''; ui.fmus = ''; ui.fart = '';
     if (document.activeElement) document.activeElement.blur();
     render();
@@ -6426,9 +6428,24 @@ var WORLD_WATER = [
         if (to === 'gallery' && ui.lastWorks === 'list') to = 'list';
       }
       if (ui.view === to) { if (b.classList.contains('tab')) scrollToTopFast(); return; }
-      if (ui.view !== to) ui.open = {};
-      ui.view = to; render();
+      softPage(function () { ui.open = {}; ui.view = to; render(); });
     }
+  }
+  // Changing page: the old page fades, then the new one eases in (the same soft swap the layout switch uses).
+  var pageBusy = false;
+  function softPage(change) {
+    var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduce || pageBusy) { change(); return; }
+    pageBusy = true;
+    $('main').classList.add('swap-out');
+    setTimeout(function () {
+      change();
+      var m = $('main');
+      m.classList.remove('swap-out');
+      m.classList.add('swap-in');
+      setTimeout(function () { m.classList.remove('swap-in'); }, 320);
+      pageBusy = false;
+    }, 150);
   }
   document.querySelectorAll('[data-view]:not(.tab)').forEach(function (b) { b.addEventListener('click', function () { goView(b); }); });
   $('tabbar').addEventListener('click', function (e) { var b = e.target.closest('.tab[data-view]'); if (b) { goView(b); setNav(false); } });
