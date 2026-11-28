@@ -11,7 +11,6 @@ body { margin: 0; font: 14px system-ui, -apple-system, "Segoe UI", sans-serif; }
 img { max-width: 100%; }
 [hidden] { display: none !important; }
 /* Paints over the phone's status-bar area so scrolled content does not show through behind the clock. */
-body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); background: var(--bg, #F2EEE6); z-index: 10; pointer-events: none; }
 /* File inputs stay invisible but are placed near the bottom centre, so iPhone opens its photo menu there instead of in a random spot. */
 .fileghost { position: fixed; left: 50%; bottom: calc(80px + env(safe-area-inset-bottom, 0px)); width: 1px; height: 1px; opacity: 0; pointer-events: none; }
 </style>
@@ -1065,7 +1064,6 @@ body.is-empty .fab-view { display: none; }
 
 /* The search bar stays pinned under the top edge; the title and totals scroll away. */
 .controls { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 8; margin: 6px 0 4px; padding: 8px 0; background: var(--bg); box-shadow: -40px 0 0 var(--bg), 40px 0 0 var(--bg); }
-body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); background: var(--bg); z-index: 9; pointer-events: none; }
 /* Section headings stay pinned at the very top; the search bar slides over them and away again, so nothing shifts. */
 .sechead { top: env(safe-area-inset-top, 0px); }
 /* Sort menu: the same width everywhere, so its arrow never moves between pages. */
@@ -1570,7 +1568,7 @@ body.is-empty .nv-row { display: none; }
         <button type="button" class="btn" id="copyBackup">Copy</button>
       </div>
     </section>
-    <p class="buildline" id="buildLine">Version 2026-11-28 14:05</p>
+    <p class="buildline" id="buildLine">Version 2026-11-28 14:30</p>
       </div>
 </div>
 
