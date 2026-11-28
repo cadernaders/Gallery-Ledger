@@ -1416,17 +1416,24 @@ body.plan-open .addpop { z-index: 26; bottom: calc(env(safe-area-inset-bottom, 0
 @keyframes popout { to { opacity: 0; transform: translateY(8px) scale(.98); } }
 @media (prefers-reduced-motion: reduce) { #main, #main.swap-in { animation: none; transition: none; } }
 
-/* nv-: the magnifier beside the totals stretches left into the search bar; the pills slide off to the left */
+/* nv-: the magnifier beside the totals stretches left into the search bar; the pills slide off to the left.
+   Past the top of the page the magnifier leaves the pills behind: it hides as you scroll down and returns as you scroll up. */
 .nv-row { position: relative; display: flex; align-items: center; margin: 8px 0 10px; min-height: 44px; }
-.nv-row > #stats { flex: 1 1 auto; min-width: 0; margin: 0; padding-right: 48px; transition: transform .3s ease, opacity .22s ease; }
-.nv-sw { position: absolute !important; right: 0; top: 50%; transform: translateY(-50%); flex: none !important; width: 40px; height: 32px; box-sizing: border-box; overflow: hidden; border: 1px solid color-mix(in srgb, var(--line) 70%, transparent); border-radius: 22px; background: none; cursor: pointer; transition: width .3s ease, height .3s ease, right .3s ease, border-color .2s ease; }
-.nv-sw svg { z-index: 1; left: 10px !important; transition: left .3s ease, color .2s ease; }
+.nv-row > #stats { flex: 1 1 auto; min-width: 0; margin: 0; padding-right: 54px; transition: transform .3s ease, opacity .22s ease; }
+.nv-dock { position: absolute; top: 0; left: 0; right: 0; height: 44px; pointer-events: none; }
+.nv-sw { position: absolute !important; right: 0; top: 0; flex: none !important; width: 44px; height: 44px; box-sizing: border-box; overflow: hidden; pointer-events: auto; border: 1px solid color-mix(in srgb, var(--line) 70%, transparent); border-radius: 22px; background: none; cursor: pointer; transition: width .3s ease, right .3s ease, border-color .2s ease, background .2s ease; }
+.nv-sw svg { z-index: 1; left: 13px !important; transition: left .3s ease, color .2s ease; }
 .nv-sw input.search { position: absolute; inset: 0; width: 100%; height: 100%; border-radius: 22px; opacity: 0; pointer-events: none; transition: opacity .2s ease; }
 .nv-sw .filterbtn, .nv-sw .clearbtn { opacity: 0; pointer-events: none; transition: opacity .2s ease; }
-.nv-cancel { position: absolute; right: 0; top: 50%; transform: translateY(-50%); height: 44px; padding: 0 2px 0 8px; border: 0; background: none; font: inherit; font-size: 15px; font-weight: 500; color: var(--accent); cursor: pointer; opacity: 0; pointer-events: none; transition: opacity .2s ease; }
+.nv-cancel { position: absolute; right: 0; top: 0; height: 44px; padding: 0 2px 0 8px; border: 0; background: none; font: inherit; font-size: 15px; font-weight: 500; color: var(--accent); cursor: pointer; opacity: 0; pointer-events: none; transition: opacity .2s ease; }
+.nv-dock.nv-float { position: fixed; top: calc(env(safe-area-inset-top, 0px) + 6px); right: auto; z-index: 12; opacity: 0; visibility: hidden; transform: translateY(calc(-100% - env(safe-area-inset-top, 0px) - 16px)); transition: transform .26s ease, opacity .2s ease, visibility 0s .26s; }
+.nv-dock.nv-float.nv-show { opacity: 1; visibility: visible; transform: none; transition: transform .26s ease, opacity .2s ease; }
+.nv-float .nv-sw { background: var(--surface); border-color: transparent; box-shadow: 0 4px 16px rgba(40, 30, 20, .16); }
+.nv-float .nv-cancel { background: var(--surface); border-radius: 22px; padding: 0 12px; box-shadow: 0 4px 16px rgba(40, 30, 20, .16); }
 .nv-row.nv-open > #stats { transform: translateX(-110%); opacity: 0; pointer-events: none; }
-.nv-row.nv-open .nv-sw { right: 62px; width: calc(100% - 62px); height: 44px; border-color: transparent; cursor: default; overflow: visible; }
+.nv-row.nv-open .nv-sw { right: 76px; width: calc(100% - 76px); border-color: transparent; cursor: default; overflow: visible; }
 .nv-row.nv-open .nv-sw svg { left: 14px !important; }
+.nv-row.nv-open .nv-float .nv-sw, .nv-float .nv-sw:focus-within { border-color: transparent; }
 .nv-row.nv-open .nv-sw input.search { opacity: 1; pointer-events: auto; transition-delay: .1s; }
 .nv-row.nv-open .nv-sw .filterbtn, .nv-row.nv-open .nv-sw .clearbtn { opacity: 1; pointer-events: auto; transition-delay: .12s; }
 .nv-row.nv-open .nv-cancel { opacity: 1; pointer-events: auto; transition-delay: .12s; }
@@ -1436,7 +1443,7 @@ body.is-empty .nv-row { display: none; }
 .controls.away { transform: none; }
 .controls.collapsed { display: none !important; }
 .controls.collapsed ~ #main { margin-top: 6px; }
-@media (prefers-reduced-motion: reduce) { .nv-row > #stats, .nv-sw, .nv-sw svg, .nv-sw input.search, .nv-sw .filterbtn, .nv-sw .clearbtn, .nv-cancel { transition: none; } }
+@media (prefers-reduced-motion: reduce) { .nv-dock.nv-float, .nv-row > #stats, .nv-sw, .nv-sw svg, .nv-sw input.search, .nv-sw .filterbtn, .nv-sw .clearbtn, .nv-cancel { transition: none; } }
 </style>
 
 <div class="wrap">
@@ -1448,6 +1455,7 @@ body.is-empty .nv-row { display: none; }
 
   <div class="nv-row" id="nvRow">
     <div class="stats" id="stats" aria-label="Totals"></div>
+    <div class="nv-dock" id="nvDock">
     <div class="searchwrap nv-sw" id="nvSw">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg>
       <input type="search" id="q" class="field-input search" enterkeyhint="search" placeholder="Search your collection" aria-label="Search works">
@@ -1455,6 +1463,7 @@ body.is-empty .nv-row { display: none; }
       <button type="button" class="filterbtn" id="filtersBtn" aria-expanded="false" aria-controls="filterPanel" aria-label="Filters" title="Filters"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16l-6.2 7.4V19l-3.6-1.8v-4.8z"/></svg><span class="fbadge" id="fBadge" hidden>0</span></button>
     </div>
     <button type="button" class="nv-cancel" id="searchCancel" tabindex="-1">Cancel</button>
+    </div>
   </div>
 
   <div class="draftbar" id="draftBar" hidden></div>
@@ -1561,7 +1570,7 @@ body.is-empty .nv-row { display: none; }
         <button type="button" class="btn" id="copyBackup">Copy</button>
       </div>
     </section>
-    <p class="buildline" id="buildLine">Version 2026-11-28 12:40</p>
+    <p class="buildline" id="buildLine">Version 2026-11-28 13:10</p>
       </div>
 </div>
 
@@ -2805,9 +2814,34 @@ var WORLD_WATER = [
     c.classList.toggle('away', hide);
     updateStick();
   }
+  // The magnifier rides in the pills row. When the row scrolls off the top it floats there instead: it hides as you
+  // scroll down and slides back in as you scroll up. At the top of the page it settles back into the row.
+  var navFloat = false, navShown = false, navUp = 0;
+  function navSet(v) { if (v === navShown) return; navShown = v; $('nvDock').classList.toggle('nv-show', v); }
+  function navPlace() {
+    var row = $('nvRow'), d = $('nvDock');
+    if (!row || !d || row.offsetParent === null) return;
+    var r = row.getBoundingClientRect(), inset = parseFloat(getComputedStyle(document.documentElement).paddingTop) || 0;
+    var fl = r.top < inset + 6;
+    if (fl !== navFloat) {
+      navFloat = fl; navShown = false; navUp = 0;
+      d.classList.remove('nv-show'); d.classList.toggle('nv-float', fl);
+      if (!fl) { d.style.left = ''; d.style.width = ''; }
+    }
+    if (fl) { d.style.left = r.left + 'px'; d.style.width = r.width + 'px'; }
+  }
+  function navScroll(dy) {
+    navPlace();
+    if (!navFloat) return;
+    if ($('nvRow').classList.contains('nv-open') && document.activeElement === $('q')) { navSet(true); return; }
+    if (dy > 5) { navUp = 0; navSet(false); }
+    else if (dy < 0) { navUp += -dy; if (navUp >= 60) { navSet(true); navUp = 0; } }
+  }
+  window.addEventListener('resize', navPlace);
   window.addEventListener('scroll', function () {
     var y = Math.max(0, window.scrollY), dy = y - lastScrollY;
     lastScrollY = y;
+    navScroll(dy);
     if (scrubHold) return;
     if (y < 90 || ui.fopen || document.activeElement === $('q')) { setBar(false); upRun = 0; return; }
     // It takes a deliberate scroll up (about 110px in one direction) to bring the bar back.
