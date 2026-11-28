@@ -1418,7 +1418,7 @@ body.plan-open .addpop { z-index: 26; bottom: calc(env(safe-area-inset-bottom, 0
 body.in-gallery .nv-band { display: none; }
 .nv-band { position: fixed; top: 0; left: 0; right: 0; height: env(safe-area-inset-top, 0px); background: var(--bg); z-index: 11; }
 /* nv-: the magnifier beside the totals stretches left into the search bar; the pills slide off to the left.
-   Past the top of the page the magnifier leaves the pills behind: it hides as you scroll down and returns as you scroll up. */
+   While the search bar is open it stays pinned at the top of the screen. */
 .nv-row { position: relative; display: flex; align-items: center; margin: 8px 0 10px; min-height: 44px; }
 .nv-row > #stats { flex: 1 1 auto; min-width: 0; margin: 0; padding-right: 54px; transition: transform .3s ease, opacity .22s ease; }
 .nv-dock { position: absolute; top: 0; left: 0; right: 0; height: 44px; pointer-events: none; }
@@ -1427,8 +1427,7 @@ body.in-gallery .nv-band { display: none; }
 .nv-sw input.search { position: absolute; inset: 0; width: 100%; height: 100%; border-radius: 22px; opacity: 0; pointer-events: none; transition: opacity .2s ease; }
 .nv-sw .filterbtn, .nv-sw .clearbtn { opacity: 0; pointer-events: none; transition: opacity .2s ease; }
 .nv-cancel { position: absolute; right: 0; top: 0; height: 44px; padding: 0 2px 0 8px; border: 0; background: none; font: inherit; font-size: 15px; font-weight: 500; color: var(--accent); cursor: pointer; opacity: 0; pointer-events: none; transition: opacity .2s ease; }
-.nv-dock.nv-float { position: fixed; top: calc(env(safe-area-inset-top, 0px) + 6px); right: auto; z-index: 12; opacity: 0; visibility: hidden; transition: opacity .25s ease, visibility 0s .25s; }
-.nv-dock.nv-float.nv-show { opacity: 1; visibility: visible; transition: opacity .25s ease; }
+.nv-dock.nv-float { position: fixed; top: calc(env(safe-area-inset-top, 0px) + 6px); right: auto; z-index: 12; }
 .nv-float .nv-sw { background: var(--surface); border-color: transparent; box-shadow: 0 4px 16px rgba(40, 30, 20, .16); }
 .nv-float .nv-cancel { background: var(--surface); border-radius: 22px; padding: 0 12px; box-shadow: 0 4px 16px rgba(40, 30, 20, .16); }
 .nv-row.nv-open > #stats { transform: translateX(-110%); opacity: 0; pointer-events: none; }
@@ -1444,7 +1443,7 @@ body.is-empty .nv-row { display: none; }
 .controls.away { transform: none; }
 .controls.collapsed { display: none !important; }
 .controls.collapsed ~ #main { margin-top: 6px; }
-@media (prefers-reduced-motion: reduce) { .nv-dock.nv-float, .nv-row > #stats, .nv-sw, .nv-sw svg, .nv-sw input.search, .nv-sw .filterbtn, .nv-sw .clearbtn, .nv-cancel { transition: none; } }
+@media (prefers-reduced-motion: reduce) { .nv-row > #stats, .nv-sw, .nv-sw svg, .nv-sw input.search, .nv-sw .filterbtn, .nv-sw .clearbtn, .nv-cancel { transition: none; } }
 </style>
 
 <div class="nv-band" id="topBand" aria-hidden="true"></div>
@@ -1573,7 +1572,7 @@ body.is-empty .nv-row { display: none; }
         <button type="button" class="btn" id="copyBackup">Copy</button>
       </div>
     </section>
-    <p class="buildline" id="buildLine">Version 2026-11-28 15:45</p>
+    <p class="buildline" id="buildLine">Version 2026-11-28 16:10</p>
       </div>
 </div>
 
@@ -2391,6 +2390,7 @@ var WORLD_WATER = [
     if (show) { sw.removeAttribute('role'); sw.removeAttribute('tabindex'); sw.removeAttribute('aria-label'); }
     else { sw.setAttribute('role', 'button'); sw.tabIndex = 0; sw.setAttribute('aria-label', 'Search and filter'); }
     $('q').tabIndex = show ? 0 : -1; $('filtersBtn').tabIndex = show ? 0 : -1; $('searchCancel').tabIndex = show ? 0 : -1;
+    navPlace();
   }
   function openSearch() {
     if ($('nvRow').classList.contains('nv-open')) return;
@@ -2818,34 +2818,26 @@ var WORLD_WATER = [
     c.classList.toggle('away', hide);
     updateStick();
   }
-  // The magnifier rides in the pills row. When the row scrolls off the top it floats there instead: it hides as you
-  // scroll down and slides back in as you scroll up. At the top of the page it settles back into the row.
-  var navFloat = false, navShown = false, navUp = 0;
-  function navSet(v) { if (v === navShown) return; navShown = v; $('nvDock').classList.toggle('nv-show', v); }
+  // The magnifier lives in the pills row and scrolls away with it. While the search bar is open it stays pinned at the top
+  // of the screen as you scroll, so you can keep searching; close it and it goes back to the row.
+  var navFloat = false;
   function navPlace() {
     var row = $('nvRow'), d = $('nvDock');
     if (!row || !d || row.offsetParent === null) return;
     var r = row.getBoundingClientRect(), inset = parseFloat(getComputedStyle(document.documentElement).paddingTop) || 0;
-    var fl = r.top < inset + 6;
+    var fl = row.classList.contains('nv-open') && r.top < inset + 6;
     if (fl !== navFloat) {
-      navFloat = fl; navShown = false; navUp = 0;
-      d.classList.remove('nv-show'); d.classList.toggle('nv-float', fl);
+      navFloat = fl;
+      d.classList.toggle('nv-float', fl);
       if (!fl) { d.style.left = ''; d.style.width = ''; }
     }
     if (fl) { d.style.left = r.left + 'px'; d.style.width = r.width + 'px'; }
-  }
-  function navScroll(dy) {
-    navPlace();
-    if (!navFloat) return;
-    if ($('nvRow').classList.contains('nv-open') && document.activeElement === $('q')) { navSet(true); return; }
-    if (dy > 5) { navUp = 0; navSet(false); }
-    else if (dy < 0) { navUp += -dy; if (navUp >= 60) { navSet(true); navUp = 0; } }
   }
   window.addEventListener('resize', navPlace);
   window.addEventListener('scroll', function () {
     var y = Math.max(0, window.scrollY), dy = y - lastScrollY;
     lastScrollY = y;
-    navScroll(dy);
+    navPlace();
     if (scrubHold) return;
     if (y < 90 || ui.fopen || document.activeElement === $('q')) { setBar(false); upRun = 0; return; }
     // It takes a deliberate scroll up (about 110px in one direction) to bring the bar back.
