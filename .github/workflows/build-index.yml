@@ -4,7 +4,10 @@ on:
     inputs:
       max_works:
         description: "How many paintings to include"
-        default: "12000"
+        default: "16000"
+      min_links:
+        description: "Least number of Wikipedia languages a painting must be in (lower means more, lesser-known paintings)"
+        default: "3"
 permissions:
   contents: write
 jobs:
@@ -23,6 +26,7 @@ jobs:
       - name: Build the index
         env:
           MAX_WORKS: ${{ github.event.inputs.max_works }}
+          MIN_LINKS: ${{ github.event.inputs.min_links }}
         run: python tools/build_index.py
       - name: Save it to the repo
         run: |
