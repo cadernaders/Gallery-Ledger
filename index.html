@@ -1416,25 +1416,37 @@ body.plan-open .addpop { z-index: 26; bottom: calc(env(safe-area-inset-bottom, 0
 @keyframes popout { to { opacity: 0; transform: translateY(8px) scale(.98); } }
 @media (prefers-reduced-motion: reduce) { #main, #main.swap-in { animation: none; transition: none; } }
 
-/* nv-: the search magnifier in the header; the search bar rests out of sight until it is tapped */
-.nv-topbtns { display: flex; align-items: center; gap: 8px; flex: none; }
+/* nv-: the magnifier beside the totals; the pills slide away and the search bar opens in their place */
+.nv-row { display: flex; align-items: center; gap: 10px; margin: 8px 0 10px; min-height: 46px; }
+.nv-row > #stats { flex: 1 1 auto; min-width: 0; margin: 0; transition: transform .17s ease, opacity .17s ease; }
+.nv-find { flex: none; display: grid; place-items: center; width: 40px; height: 32px; padding: 0; border: 1px solid color-mix(in srgb, var(--line) 70%, transparent); border-radius: 999px; background: none; color: var(--muted); cursor: pointer; transition: transform .17s ease, opacity .17s ease; }
+.nv-find:active { color: var(--accent); }
+.nv-row.nv-slide > #stats { transform: translateX(-28px); opacity: 0; pointer-events: none; }
+.nv-row.nv-slide > .nv-find { transform: translateX(-14px); opacity: 0; pointer-events: none; }
+.nv-row.nv-gone { display: none; }
+body.is-empty .nv-row { display: none; }
 .controls.collapsed { display: none !important; }
-.controls.collapsed ~ #main { margin-top: 16px; }
-body.is-empty #searchBtn { display: none; }
-#searchBtn[aria-pressed="true"] { color: var(--accent); border-color: var(--accent); }
+.controls.collapsed ~ #main { margin-top: 6px; }
+.controls .searchwrap { flex: 1 1 0; min-width: 0; }
+.nv-cancel { flex: none; height: 44px; padding: 0 4px 0 6px; border: 0; background: none; font: inherit; font-size: 15px; font-weight: 500; color: var(--accent); cursor: pointer; }
+.controls.nv-in { animation: nvin .22s ease both; }
+.controls.nv-out { animation: nvout .17s ease both; }
+@keyframes nvin { from { opacity: 0; transform: translateX(28px); } to { opacity: 1; transform: none; } }
+@keyframes nvout { from { opacity: 1; transform: none; } to { opacity: 0; transform: translateX(28px); } }
+@media (prefers-reduced-motion: reduce) { .controls.nv-in, .controls.nv-out { animation: none; } .nv-row > #stats, .nv-find { transition: none; } }
 </style>
 
 <div class="wrap">
   <header class="top">
     <h1>Gallery Ledger</h1>
-    <div class="nv-topbtns">
-    <button type="button" class="morebtn" id="searchBtn" aria-label="Search and filter" title="Search and filter" aria-pressed="false"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg></button>
     <button type="button" class="morebtn" id="moreBtn" aria-label="More" title="More"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg></button>
-    </div>
   </header>
 
 
-  <div class="stats" id="stats" aria-label="Totals"></div>
+  <div class="nv-row" id="nvRow">
+    <div class="stats" id="stats" aria-label="Totals"></div>
+    <button type="button" class="nv-find" id="searchBtn" aria-label="Search and filter" title="Search and filter"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg></button>
+  </div>
 
   <div class="draftbar" id="draftBar" hidden></div>
 
@@ -1445,6 +1457,7 @@ body.is-empty #searchBtn { display: none; }
       <button type="button" class="clearbtn auto" aria-label="Clear" tabindex="-1"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
       <button type="button" class="filterbtn" id="filtersBtn" aria-expanded="false" aria-controls="filterPanel" aria-label="Filters" title="Filters"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16l-6.2 7.4V19l-3.6-1.8v-4.8z"/></svg><span class="fbadge" id="fBadge" hidden>0</span></button>
     </div>
+    <button type="button" class="nv-cancel" id="searchCancel">Cancel</button>
     <div class="fpanel" id="filterPanel" hidden>
       <div class="frow">
         <span class="flabel">Show</span>
@@ -1545,7 +1558,7 @@ body.is-empty #searchBtn { display: none; }
         <button type="button" class="btn" id="copyBackup">Copy</button>
       </div>
     </section>
-    <p class="buildline" id="buildLine">Version 2026-11-28 11:45</p>
+    <p class="buildline" id="buildLine">Version 2026-11-28 12:05</p>
       </div>
 </div>
 
@@ -2353,16 +2366,43 @@ var WORLD_WATER = [
     if (n > 1) chips.append(el('button', { type: 'button', class: 'link', onclick: function () { ui.filter = 'all'; ui.fav = false; ui.fneed = false; ui.fmov = ''; ui.fmed = ''; ui.fsub = ''; ui.fcent = ''; ui.fctry = ''; ui.fmus = ''; ui.fart = ''; render(); } }, 'Clear all'));
     chips.hidden = !n;
     // The search bar rests out of sight until the magnifier is tapped; it stays open while a search or filter is active.
-    var showBar = ui.sopen || !!ui.q || n > 0 || ui.fopen;
-    document.querySelector('.controls').classList.toggle('collapsed', !showBar);
-    $('searchBtn').setAttribute('aria-pressed', String(showBar));
+    var others = n - (ui.filter !== 'all' ? 1 : 0);
+    setSearchShown(ui.sopen || !!ui.q || ui.fopen || others > 0, !searchInit);
+    searchInit = true;
+  }
+  // The pills slide off to the left and the search bar opens in their place; closing reverses it.
+  var searchShown = false, searchInit = false, searchTimer = 0;
+  function setSearchShown(show, instant) {
+    if (show === searchShown) return;
+    searchShown = show;
+    var row = $('nvRow'), c = document.querySelector('.controls');
+    clearTimeout(searchTimer);
+    c.classList.remove('nv-in', 'nv-out');
+    if (instant || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      row.classList.toggle('nv-gone', show); row.classList.remove('nv-slide'); c.classList.toggle('collapsed', !show);
+      return;
+    }
+    if (show) {
+      row.classList.add('nv-slide');
+      searchTimer = setTimeout(function () { row.classList.add('nv-gone'); c.classList.remove('collapsed'); c.classList.add('nv-in'); }, 170);
+    } else {
+      c.classList.add('nv-out');
+      searchTimer = setTimeout(function () {
+        c.classList.remove('nv-out'); c.classList.add('collapsed'); row.classList.remove('nv-gone');
+        requestAnimationFrame(function () { requestAnimationFrame(function () { row.classList.remove('nv-slide'); }); });
+      }, 170);
+    }
   }
   $('searchBtn').addEventListener('click', function () {
-    var open = $('searchBtn').getAttribute('aria-pressed') === 'true';
-    if (open && (ui.q || $('filtersBtn').getAttribute('aria-pressed') === 'true')) { $('q').focus(); return; }
-    ui.sopen = !open; if (!ui.sopen) ui.fopen = false;
+    ui.sopen = true;
     renderFilters();
-    if (ui.sopen) setTimeout(function () { $('q').focus(); }, 30);
+    setTimeout(function () { $('q').focus(); }, 260);
+  });
+  $('searchCancel').addEventListener('click', function () {
+    ui.sopen = false; ui.fopen = false; ui.q = ''; $('q').value = '';
+    ui.fav = false; ui.fneed = false; ui.fmov = ''; ui.fmed = ''; ui.fsub = ''; ui.fcent = ''; ui.fctry = ''; ui.fmus = ''; ui.fart = '';
+    if (document.activeElement) document.activeElement.blur();
+    render();
   });
   $('filtersBtn').addEventListener('click', function () { ui.fopen = !ui.fopen; renderFilters(); });
   $('fMoreBtn').addEventListener('click', function () { var open = ui.fmore || ($('fMoreBtn').getAttribute('aria-expanded') === 'true'); ui.fmore = !open; render(); });
