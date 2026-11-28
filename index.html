@@ -1431,30 +1431,37 @@ body.is-empty .nv-row { display: none; }
 .nb-nav svg, .nb-find svg, .nb-view svg { width: 26px; height: 26px; }
 .nb-view[aria-expanded="true"] { color: var(--accent); }
 .nb-view[aria-expanded="true"] svg { background: color-mix(in srgb, var(--accent) 14%, transparent); border-radius: 10px; box-sizing: content-box; padding: 6px 18px; margin: -6px -18px; }
-.nb-main { transition: opacity .2s ease .12s; }
+.nb-main { transition: opacity .2s ease .1s; }
 .nb-pages-open .nb-main, .nb-search-open .nb-main { opacity: 0; pointer-events: none; visibility: hidden; transition: opacity .16s ease, visibility 0s .16s; }
-/* Pages: the four buttons fade away and the four pages slide in from the left, one after another. */
-.nb-pages { position: absolute; inset: 0; display: flex; align-items: center; visibility: hidden; pointer-events: none; transition: visibility 0s .35s; }
-.nb-pages > .tab { flex: 1 1 0; opacity: 0; transform: translateX(-18px); transition: opacity .16s ease, transform .3s cubic-bezier(.2, .7, .3, 1); }
-.nb-pages-open .nb-pages { visibility: visible; pointer-events: auto; transition: visibility 0s; }
-.nb-pages-open .nb-pages > .tab { opacity: 1; transform: none; transition: opacity .28s ease, transform .4s cubic-bezier(.2, .7, .3, 1); }
-.nb-pages-open .nb-pages > .tab:nth-child(1) { transition-delay: .08s; }
-.nb-pages-open .nb-pages > .tab:nth-child(2) { transition-delay: .13s; }
-.nb-pages-open .nb-pages > .tab:nth-child(3) { transition-delay: .18s; }
-.nb-pages-open .nb-pages > .tab:nth-child(4) { transition-delay: .23s; }
-/* Search: the field grows out of the magnifier circle at the right. */
-.nb-search { position: absolute; inset: 0; display: flex; align-items: center; gap: 6px; padding: 0 16px; box-sizing: border-box; background: var(--surface); visibility: hidden; pointer-events: none;
-  clip-path: inset(5px calc(12.5% - 22px) 5px calc(87.5% - 22px) round 22px); transition: clip-path .36s cubic-bezier(.45, .05, .25, 1), visibility 0s .36s; }
-.nb-search > * { opacity: 0; transition: opacity .14s ease; }
-.nb-search-open .nb-search { clip-path: inset(0 0 0 0 round 0); visibility: visible; pointer-events: auto; transition: clip-path .45s cubic-bezier(.45, .05, .25, 1), visibility 0s; }
-.nb-search-open .nb-search > * { opacity: 1; transition: opacity .24s ease .18s; }
-.nb-sw { position: relative; flex: 1 1 auto; min-width: 0; }
-.nb-sw .search, .searchwrap.nb-sw input.search { height: 44px; border-radius: 22px; }
-.nb-cancel { flex: none; height: 44px; padding: 0 4px 0 10px; border: 0; background: none; font: inherit; font-size: 15px; font-weight: 500; color: var(--accent); cursor: pointer; }
+/* Pages: the four buttons fade away and the four pages slide in from the left, one after another. Closing is just a fade. */
+.nb-pages { position: absolute; inset: 0; display: flex; align-items: center; opacity: 0; visibility: hidden; pointer-events: none; transition: opacity .16s ease, visibility 0s .16s; }
+.nb-pages > .tab { flex: 1 1 0; }
+.nb-pages-open .nb-pages { opacity: 1; visibility: visible; pointer-events: auto; transition: none; }
+.nb-pages-open .nb-pages > .tab { animation: nbslide .4s cubic-bezier(.2, .7, .3, 1) both; }
+.nb-pages-open .nb-pages > .tab:nth-child(1) { animation-delay: .06s; }
+.nb-pages-open .nb-pages > .tab:nth-child(2) { animation-delay: .11s; }
+.nb-pages-open .nb-pages > .tab:nth-child(3) { animation-delay: .16s; }
+.nb-pages-open .nb-pages > .tab:nth-child(4) { animation-delay: .21s; }
+@keyframes nbslide { from { opacity: 0; transform: translateX(-18px); } to { opacity: 1; transform: none; } }
+/* Search: no panel. The field is the magnifier button itself: it grows a rim and stretches to the left, the other buttons fade. */
+.nb-search-open .nb-find { opacity: 0; transition: none; }
+.nb-find { transition: opacity .12s ease .3s; }
+.nb-search { position: absolute; inset: 0; visibility: hidden; pointer-events: none; transition: visibility 0s .42s; }
+.nb-search-open .nb-search { visibility: visible; pointer-events: none; transition: none; }
+.searchwrap.nb-sw { position: absolute; top: 50%; margin-top: -22px; height: 44px; box-sizing: border-box; left: calc(87.5% - 22px); right: calc(12.5% - 22px); transition: left .4s cubic-bezier(.4, 0, .2, 1), right .4s cubic-bezier(.4, 0, .2, 1); }
+.nb-search-open .searchwrap.nb-sw { left: 16px; right: 86px; pointer-events: auto; }
+.nb-sw svg { left: 9px; width: 26px; height: 26px; z-index: 1; transition: left .4s cubic-bezier(.4, 0, .2, 1), width .4s cubic-bezier(.4, 0, .2, 1), height .4s cubic-bezier(.4, 0, .2, 1); }
+.nb-search-open .nb-sw svg { left: 14px; width: 18px; height: 18px; }
+.searchwrap.nb-sw input.search { height: 44px; border-radius: 22px; opacity: 0; transition: opacity .15s ease .26s; }
+.nb-search-open .searchwrap.nb-sw input.search { opacity: 1; transition: opacity .15s ease; }
+.nb-sw .filterbtn, .nb-sw .clearbtn { opacity: 0; transition: opacity .12s ease; }
+.nb-search-open .nb-sw .filterbtn, .nb-search-open .nb-sw .clearbtn { opacity: 1; transition: opacity .2s ease .24s; }
+.nb-cancel { position: absolute; right: 16px; top: 50%; margin-top: -22px; width: 64px; height: 44px; padding: 0; border: 0; background: none; font: inherit; font-size: 15px; font-weight: 500; text-align: right; color: var(--accent); cursor: pointer; opacity: 0; transition: opacity .12s ease; }
+.nb-search-open .nb-cancel { opacity: 1; pointer-events: auto; transition: opacity .2s ease .26s; }
 .viewpanel { bottom: calc(env(safe-area-inset-bottom, 0px) + 66px); }
 body.is-empty .nb-view, body.is-empty .nb-find { display: none; }
 .tabbar.kb-up { padding-bottom: 0; }
-@media (prefers-reduced-motion: reduce) { .nb-pages, .nb-pages > .tab, .nb-search, .nb-search > *, .nb-main { transition: none !important; } }
+@media (prefers-reduced-motion: reduce) { .nb-pages, .nb-pages > .tab, .nb-main, .nb-find, .nb-sw, .nb-sw svg, .nb-sw input.search, .nb-sw .filterbtn, .nb-sw .clearbtn, .nb-cancel { transition: none !important; animation: none !important; } }
 </style>
 
 <div class="nv-band" id="topBand" aria-hidden="true"></div>
@@ -1573,7 +1580,7 @@ body.is-empty .nb-view, body.is-empty .nb-find { display: none; }
         <button type="button" class="btn" id="copyBackup">Copy</button>
       </div>
     </section>
-    <p class="buildline" id="buildLine">Version 2026-11-28 14:00</p>
+    <p class="buildline" id="buildLine">Version 2026-11-28 14:25</p>
       </div>
 </div>
 
