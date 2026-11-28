@@ -1415,12 +1415,21 @@ body.plan-open .addpop { z-index: 26; bottom: calc(env(safe-area-inset-bottom, 0
 .fabscrim.leaving { opacity: 0; transition: opacity .15s ease; }
 @keyframes popout { to { opacity: 0; transform: translateY(8px) scale(.98); } }
 @media (prefers-reduced-motion: reduce) { #main, #main.swap-in { animation: none; transition: none; } }
+
+/* nv-: the search magnifier in the header; the search bar rests out of sight until it is tapped */
+.nv-topbtns { display: flex; align-items: center; gap: 8px; flex: none; }
+.controls.collapsed { display: none !important; }
+body.is-empty #searchBtn { display: none; }
+#searchBtn[aria-pressed="true"] { color: var(--accent); border-color: var(--accent); }
 </style>
 
 <div class="wrap">
   <header class="top">
     <h1>Gallery Ledger</h1>
+    <div class="nv-topbtns">
+    <button type="button" class="morebtn" id="searchBtn" aria-label="Search and filter" title="Search and filter" aria-pressed="false"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg></button>
     <button type="button" class="morebtn" id="moreBtn" aria-label="More" title="More"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg></button>
+    </div>
   </header>
 
 
@@ -1428,7 +1437,7 @@ body.plan-open .addpop { z-index: 26; bottom: calc(env(safe-area-inset-bottom, 0
 
   <div class="draftbar" id="draftBar" hidden></div>
 
-  <div class="controls">
+  <div class="controls collapsed">
     <div class="searchwrap">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg>
       <input type="search" id="q" class="field-input search" enterkeyhint="search" placeholder="Search your collection" aria-label="Search works">
@@ -1535,7 +1544,7 @@ body.plan-open .addpop { z-index: 26; bottom: calc(env(safe-area-inset-bottom, 0
         <button type="button" class="btn" id="copyBackup">Copy</button>
       </div>
     </section>
-    <p class="buildline" id="buildLine">Version 2026-11-28 10:40</p>
+    <p class="buildline" id="buildLine">Version 2026-11-28 11:30</p>
       </div>
 </div>
 
@@ -2342,7 +2351,18 @@ var WORLD_WATER = [
     });
     if (n > 1) chips.append(el('button', { type: 'button', class: 'link', onclick: function () { ui.filter = 'all'; ui.fav = false; ui.fneed = false; ui.fmov = ''; ui.fmed = ''; ui.fsub = ''; ui.fcent = ''; ui.fctry = ''; ui.fmus = ''; ui.fart = ''; render(); } }, 'Clear all'));
     chips.hidden = !n;
+    // The search bar rests out of sight until the magnifier is tapped; it stays open while a search or filter is active.
+    var showBar = ui.sopen || !!ui.q || n > 0 || ui.fopen;
+    document.querySelector('.controls').classList.toggle('collapsed', !showBar);
+    $('searchBtn').setAttribute('aria-pressed', String(showBar));
   }
+  $('searchBtn').addEventListener('click', function () {
+    var open = $('searchBtn').getAttribute('aria-pressed') === 'true';
+    if (open && (ui.q || $('filtersBtn').getAttribute('aria-pressed') === 'true')) { $('q').focus(); return; }
+    ui.sopen = !open; if (!ui.sopen) ui.fopen = false;
+    renderFilters();
+    if (ui.sopen) setTimeout(function () { $('q').focus(); }, 30);
+  });
   $('filtersBtn').addEventListener('click', function () { ui.fopen = !ui.fopen; renderFilters(); });
   $('fMoreBtn').addEventListener('click', function () { var open = ui.fmore || ($('fMoreBtn').getAttribute('aria-expanded') === 'true'); ui.fmore = !open; render(); });
   $('favFilter').addEventListener('click', function () { ui.fav = !ui.fav; render(); });
